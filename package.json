@@ -1,0 +1,8 @@
+{
+  "name": "wasm-workshop",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:malcoriel/wasm-workshop.git",
+  "author": "Valeriy Kuzmin <vkuzmin@kontur.ru>",
+  "license": "MIT"
+}
