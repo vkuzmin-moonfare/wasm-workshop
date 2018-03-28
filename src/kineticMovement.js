@@ -5,10 +5,10 @@ let rightVec;
 
 class Movement {
     constructor(body, Box2D, groundY) {
-        this.maxVelocity = 3;
-        this.accelerationPerSecond = 3;
+        this.maxVelocity = 5;
+        this.accelerationPerSecond = 5;
         this.decellerationPerSecond = 1;
-        this.dragPerSecond = 1;
+        this.dragPerSecond = 0.5;
         this.minVelocity = 0.1;
         b2Vec2 = Box2D.b2Vec2;
         rightVec = new b2Vec2(1, 0);
