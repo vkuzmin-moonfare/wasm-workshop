@@ -1,29 +1,12 @@
 import React, {Component} from 'react';
 import './App.css';
-
-let initialized = false;
-let initializing = null;
-
-const initBox2D = async () => {
-    if (initialized)
-        return window.Box2D;
-    if (initializing)
-        return initializing;
-    initializing = window.Box2D()
-        .then((result) => {
-            initialized = true;
-            result.then = null;
-            window.Box2D = result;
-            return result;
-        });
-    return initializing;
-};
+import initBox2D from './box2d.js'
 
 class App extends Component {
     testBox2D = async () => {
         try {
-            await initBox2D();
-            const Vec2 = window.Box2D.b2Vec2;
+            const Box2D = await initBox2D();
+            const Vec2 = Box2D.b2Vec2;
             new Vec2(0, 0);
             console.log('success!');
         } catch (e) {

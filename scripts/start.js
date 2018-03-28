@@ -79,6 +79,13 @@ choosePort(HOST, DEFAULT_PORT)
       proxyConfig,
       urls.lanUrlForConfig
     );
+    serverConfig.before = (app) => {
+          app.use((req, res, next) => {
+              if (req.path.endsWith('.wasm'))
+                  res.type('application/wasm');
+              next();
+          });
+      };
     const devServer = new WebpackDevServer(compiler, serverConfig);
     // Launch WebpackDevServer.
     devServer.listen(port, HOST, err => {

@@ -123,7 +123,8 @@ module.exports = {
           // Process JS with Babel.
           {
             test: /\.(js|jsx|mjs)$/,
-            include: paths.appSrc,
+              exclude: /wasm\.js/,
+              include: paths.appSrc,
             loader: require.resolve('babel-loader'),
             options: {
 
