@@ -33,6 +33,10 @@ export default class Interface extends React.Component {
         this.canvas = canvas;
     };
 
+    componentDidMount() {
+        setTimeout(this.start);
+    }
+
     render() {
         return <div className="interface">
             <canvas className="game" width={1} height={1} ref={this.saveCanvas}/>

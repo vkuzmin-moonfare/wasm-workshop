@@ -1,6 +1,7 @@
 import box2DLoader from './box2d';
 import DebugDraw from './DebugDraw';
 import Time from './time';
+import Movement from './kineticMovement';
 
 let Box2D;
 const worldWidth = 16;
@@ -22,6 +23,8 @@ export default class Game {
         this.time.setInterval(this.updatePhysics, this.updateRender);
         this.addBoundaries();
         this.addBoulders();
+        this.player = this.addPlayer();
+        this.playerMovement = new Movement(this.player, Box2D);
     }
 
     addBoundaries() {
@@ -35,6 +38,10 @@ export default class Game {
         this.makeRectangleImpl(this.world, worldWidth / 2, 3, 1, 1, true);
         this.makeRectangleImpl(this.world, worldWidth / 2 + 3, 3, 1, 1, true);
         this.makeRectangleImpl(this.world, worldWidth / 2 - 3, 3, 1, 1, true);
+    }
+
+    addPlayer() {
+        return this.makeRectangleImpl(this.world, worldWidth / 2 + 0.5, worldHeight - 1, 0.5, 1.5, true);
     }
 
     makeRectangleImpl(world, x, y, width, height, dynamic) {
@@ -59,8 +66,9 @@ export default class Game {
 
     };
 
-    updatePhysics = (timeSpent) => {
-        this.world.Step(timeSpent / 1000, 10, 10);
+    updatePhysics = (elapsed) => {
+        this.playerMovement.applyDirection(elapsed);
+        this.world.Step(elapsed / 1000, 10, 10);
         this.world.ClearForces();
         this.debugDraw.update();
     };
