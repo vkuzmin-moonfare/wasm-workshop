@@ -6,11 +6,30 @@ import Movement from './kineticMovement';
 let Box2D;
 const worldWidth = 16;
 const worldHeight = 9;
-window.scale = 100;
-
 export default class Game {
     constructor(canvas) {
         this.canvas = canvas;
+    }
+
+    applyProportionateDimensions() {
+        const oldWidth = this.canvas.clientWidth;
+        const oldHeight = this.canvas.clientHeight;
+        let newWidth, newHeight, scale;
+        const proportion = oldWidth / oldHeight;
+        let rightProportion = worldWidth / worldHeight;
+        // newW/newH = worldWidth/WorldHeight
+        if (proportion > rightProportion) { // landscape, fit height
+            scale = oldHeight / worldHeight;
+            newHeight = oldHeight;
+            newWidth = rightProportion * newHeight;
+        } else { // portrait, fit width
+            scale = oldWidth / worldWidth;
+            newWidth = oldWidth;
+            newHeight =  newWidth / rightProportion;
+        }
+        window.scale = scale;
+        this.canvas.style.width = `${newWidth}px`;
+        this.canvas.style.height = `${newHeight}px`;
     }
 
     async start() {
@@ -18,6 +37,7 @@ export default class Game {
         let {b2World, b2Vec2} = Box2D;
         this.world = new b2World(new b2Vec2(0, 1));
         this.world.game = this;
+        this.applyProportionateDimensions();
         this.debugDraw = new DebugDraw(this.canvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
         this.time = new Time(1000 / 60);
         this.time.setInterval(this.updatePhysics, this.updateRender);
