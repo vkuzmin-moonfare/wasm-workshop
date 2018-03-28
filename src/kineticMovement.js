@@ -4,7 +4,7 @@ let b2Vec2;
 let rightVec;
 
 class Movement {
-    constructor(body, Box2D) {
+    constructor(body, Box2D, groundY) {
         this.maxVelocity = 3;
         this.accelerationPerSecond = 3;
         this.decellerationPerSecond = 1;
@@ -14,6 +14,7 @@ class Movement {
         rightVec = new b2Vec2(1, 0);
         this.body = body;
         this.body.SetLinearDamping(0);
+        this.groundY = groundY;
         this.resetPressedKeys();
         document.addEventListener('keydown', this.keydown);
         document.addEventListener('keyup', this.keyup);
@@ -27,43 +28,36 @@ class Movement {
         let additionalVelocity = new b2Vec2(0, 0);
         let controlsApplied = true;
         let addedVec;
+        let contacts = this.body.GetContactList();
+        const isGrounded = contacts.ptr !== 0;
+        let jumpMultiplier = isGrounded ? 10 : 0;
         if (direction === "W") {
-            addedVec = new b2Vec2(0, -acceleration);
+            addedVec = new b2Vec2(0, -acceleration * jumpMultiplier);
             additionalVelocity.op_add(addedVec);
             addedVec.__destroy__();
         }
-        else if (direction === "A") {
+        else if (direction === "A" || direction === "AS") {
             addedVec = new b2Vec2(-acceleration, 0);
             additionalVelocity.op_add(addedVec);
             addedVec.__destroy__();
         }
-        else if (direction === "S") {
-            addedVec = new b2Vec2(0, acceleration);
-            additionalVelocity.op_add(addedVec);
-            addedVec.__destroy__();
-        }
-        else if (direction === "D") {
+        // else if (direction === "S") {
+        //     addedVec = new b2Vec2(0, acceleration);
+        //     additionalVelocity.op_add(addedVec);
+        //     addedVec.__destroy__();
+        // }
+        else if (direction === "D" || direction === "SD") {
             addedVec = new b2Vec2(acceleration, 0);
             additionalVelocity.op_add(addedVec);
             addedVec.__destroy__();
         }
         else if (direction === "WA") {
-            addedVec = new b2Vec2(-acceleration, -acceleration);
-            additionalVelocity.op_add(addedVec);
-            addedVec.__destroy__();
-        }
-        else if (direction === "AS") {
-            addedVec = new b2Vec2(-acceleration, acceleration);
-            additionalVelocity.op_add(addedVec);
-            addedVec.__destroy__();
-        }
-        else if (direction === "SD") {
-            addedVec = new b2Vec2(acceleration, acceleration);
+            addedVec = new b2Vec2(-acceleration, -acceleration * jumpMultiplier);
             additionalVelocity.op_add(addedVec);
             addedVec.__destroy__();
         }
         else if (direction === "WD") {
-            addedVec = new b2Vec2(acceleration, -acceleration);
+            addedVec = new b2Vec2(acceleration, -acceleration * jumpMultiplier);
             additionalVelocity.op_add(addedVec);
             addedVec.__destroy__();
         }
@@ -104,6 +98,10 @@ class Movement {
         this.body.ApplyLinearImpulse(additionalVelocity, this.body.GetWorldCenter());
         additionalVelocity.__destroy__();
         this._normalizeVelocity();
+        const transform = this.body.GetTransform();
+        // let angle = transform.get_q().GetAngle();
+        // if (Math.abs(angle) > Math.Pi / 8)
+        //     this.body.ApplyAngularImpulse(Math.sign(angle) * 0.2);
     }
 
     _normalizeVelocity() {

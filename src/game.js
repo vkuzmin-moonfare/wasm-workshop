@@ -35,7 +35,7 @@ export default class Game {
     async start() {
         Box2D = await box2DLoader();
         let {b2World, b2Vec2} = Box2D;
-        this.world = new b2World(new b2Vec2(0, 1));
+        this.world = new b2World(new b2Vec2(0, 10));
         this.world.game = this;
         this.applyProportionateDimensions();
         this.debugDraw = new DebugDraw(this.canvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
@@ -61,7 +61,24 @@ export default class Game {
     }
 
     addPlayer() {
-        return this.makeRectangleImpl(this.world, worldWidth / 2 + 0.5, worldHeight - 1, 0.5, 1.5, true);
+        const width = 0.5;
+        const height = 0.5;
+        const x = worldWidth / 2;
+        const y = worldHeight - 1;
+        const bodyDef = new Box2D.b2BodyDef();
+        bodyDef.set_type(Box2D.b2_dynamicBody);
+        const body = this.world.CreateBody(bodyDef);
+        body.SetFixedRotation(true);
+        const halfWidth = width / 2;
+        const halfHeight = height / 2;
+        let bodyShape = new Box2D.b2PolygonShape();
+        let center = new Box2D.b2Vec2(x, y);
+        bodyShape.SetAsBox(halfWidth, halfHeight, center, 0);
+        body.CreateFixture(bodyShape, 1);
+        // let baseShape = new Box2D.b2PolygonShape();
+        // baseShape.SetAsBox(width * 2, 0.01, new Box2D.b2Vec2(x, y + halfHeight), 0);
+        // body.CreateFixture(baseShape, 1000);
+        return body;
     }
 
     makeRectangleImpl(world, x, y, width, height, dynamic) {
