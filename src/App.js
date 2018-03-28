@@ -4,6 +4,7 @@ import initBox2D from './box2d.js'
 
 class App extends Component {
     testBox2D = async () => {
+        console.time('load');
         try {
             const Box2D = await initBox2D();
             const Vec2 = Box2D.b2Vec2;
@@ -12,6 +13,7 @@ class App extends Component {
         } catch (e) {
             console.error(e);
         }
+        console.timeEnd('load');
     };
 
     render() {
