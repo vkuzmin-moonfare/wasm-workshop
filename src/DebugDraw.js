@@ -8,10 +8,8 @@ const e_jointBit = 0x0002;
 // const e_centerOfMassBit = 0x0010;
 
 export default class DebugDraw {
-    constructor(canvas, world, Box2D) {
+    constructor(canvas, world, Box2D, width, height) {
         this.world = world;
-        const width = window.scale * window.worldWidth;
-        const height = window.scale * window.worldHeight;
         this.canvas = canvas;
         this.canvas.width = width;
         this.canvas.height = height;

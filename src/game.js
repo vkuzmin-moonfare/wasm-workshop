@@ -3,12 +3,13 @@ import DebugDraw from './DebugDraw';
 import Time from './time';
 
 let Box2D;
+const worldWidth = 16;
+const worldHeight = 9;
+window.scale = 500;
+
 export default class Game {
     constructor(canvas) {
         this.canvas = canvas;
-        window.scale = 10;
-        window.worldWidth = 16;
-        window.worldHeight = 9;
     }
 
     async start() {
@@ -16,15 +17,17 @@ export default class Game {
         let {b2World} = Box2D;
         this.world = new b2World();
         this.world.game = this;
-        this.debugDraw = new DebugDraw(this.canvas, this.world, Box2D);
+        this.debugDraw = new DebugDraw(this.canvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
         this.time = new Time(1000 / 60);
         this.time.setInterval(this.updatePhysics, this.updateRender);
         this.addBoundaries();
     }
 
     addBoundaries() {
-        this.makeRectangleImpl(this.world, 0, 0, 10, 5, false);
-        this.makeRectangleImpl(this.world, 0, 0, 5, 6, false);
+        this.makeRectangleImpl(this.world, worldWidth / 2, 0, worldWidth, 1, false);
+        this.makeRectangleImpl(this.world, 0, worldHeight / 2, 1, worldHeight, false);
+        this.makeRectangleImpl(this.world, worldWidth, worldHeight / 2, 1, worldHeight, false);
+        this.makeRectangleImpl(this.world, worldWidth / 2, worldHeight, worldWidth, 1, false);
     }
 
     makeRectangleImpl(world, x, y, width, height, dynamic) {
