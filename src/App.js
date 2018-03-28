@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import './App.css';
 import initBox2D from './box2d.js'
+import GameArea from './GameArea';
 
 class App extends Component {
     testBox2D = async () => {
@@ -20,6 +21,7 @@ class App extends Component {
         return (
             <div className="app">
                 <button onClick={this.testBox2D}>TEST box2d</button>
+                <GameArea/>
             </div>
         );
     }
