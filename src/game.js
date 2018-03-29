@@ -1,7 +1,7 @@
 import box2DLoader from './box2d';
 import DebugDraw from './DebugDraw';
 import Time from './time';
-import Movement from './kineticMovement';
+import Movement from './controls';
 import uuid from 'uuid';
 
 let Box2D;

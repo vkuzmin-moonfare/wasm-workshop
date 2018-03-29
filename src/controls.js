@@ -4,6 +4,36 @@ let b2Vec2;
 let rightVec;
 
 class Movement {
+    keydown = (e) => {
+        if (this.knownKeys.indexOf(e.which) > -1)
+        {
+            this.pressedButtons[kb.k2ch[e.which]] = true;
+            this.recalculateAccelerationDirection();
+            return false;
+        }
+        return true;
+    };
+    keyup = (e) => {
+        if (this.knownKeys.indexOf(e.which) > -1)
+        {
+            this.pressedButtons[kb.k2ch[e.which]] = false;
+            return false;
+        }
+        this.recalculateAccelerationDirection();
+        return false;
+    };
+
+    knownKeys = [
+        kb.ch2k.Up,
+        kb.ch2k.Down,
+        kb.ch2k.Left,
+        kb.ch2k.Right,
+        kb.ch2k.W,
+        kb.ch2k.A,
+        kb.ch2k.S,
+        kb.ch2k.D,
+    ];
+
     constructor(body, Box2D, groundY) {
         this.maxVelocity = 5;
         this.accelerationPerSecond = 5;
@@ -18,6 +48,15 @@ class Movement {
         this.resetPressedKeys();
         document.addEventListener('keydown', this.keydown);
         document.addEventListener('keyup', this.keyup);
+    }
+
+    getShootDirection() {
+        let dir = '';
+        dir += this.pressedButtons.Up ? 'U' : '';
+        dir += this.pressedButtons.Down ? 'D' : '';
+        dir += this.pressedButtons.Left ? 'L' : '';
+        dir += this.pressedButtons.Right ? 'R' : '';
+        return dir;
     }
 
     applyDirection(elapsedTime) {
@@ -113,82 +152,24 @@ class Movement {
         this.body.SetLinearVelocity(velocity);
     }
 
-
     _calcCorrAngle(a, b) {
         let angle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
         return (1 - Math.cos(angle)) / 2;
     }
 
-    keydown = (e) => {
-        if (e.which === kb.ch2k.A) {
-            this.pressedKeys.A = true;
-            this.recalculateAccelerationDirection();
-            return false;
-        } else if (e.which === kb.ch2k.D) {
-            this.pressedKeys.D = true;
-            this.recalculateAccelerationDirection();
-            return false;
-        } else if (e.which === kb.ch2k.W) {
-            this.pressedKeys.W = true;
-            this.recalculateAccelerationDirection();
-            return false;
-        } else if (e.which === kb.ch2k.S) {
-            this.pressedKeys.S = true;
-            this.recalculateAccelerationDirection();
-            return false;
-        }
-        this.recalculateAccelerationDirection();
-        return true;
-    };
-
-    keyup = (e) => {
-        if (e.which === kb.ch2k.A) {
-            this.pressedKeys.A = false;
-        } else if (e.which === kb.ch2k.D) {
-            this.pressedKeys.D = false;
-        } else if (e.which === kb.ch2k.W) {
-            this.pressedKeys.W = false;
-        } else if (e.which === kb.ch2k.S) {
-            this.pressedKeys.S = false;
-        }
-        this.recalculateAccelerationDirection();
-        return false;
-    };
-
     recalculateAccelerationDirection() {
         let p = '';
-        p += this.pressedKeys.W ? 'W' : '_';
-        p += this.pressedKeys.A ? 'A' : '_';
-        p += this.pressedKeys.S ? 'S' : '_';
-        p += this.pressedKeys.D ? 'D' : '_';
+        p += this.pressedButtons.W ? 'W' : '';
+        p += this.pressedButtons.A ? 'A' : '';
+        p += this.pressedButtons.S ? 'S' : '';
+        p += this.pressedButtons.D ? 'D' : '';
 
-        if (p === 'W___')
-            this.direction = 'W';
-        else if (p === '_A__')
-            this.direction = 'A';
-        else if (p === '__S_')
-            this.direction = 'S';
-        else if (p === '___D')
-            this.direction = 'D';
-        else if (p === 'WA__')
-            this.direction = 'WA';
-        else if (p === 'W__D')
-            this.direction = 'WD';
-        else if (p === '_AS_')
-            this.direction = 'AS';
-        else if (p === '__SD')
-            this.direction = 'SD';
-        else
-            this.direction = '';
+        this.direction = p;
     }
 
     resetPressedKeys() {
-        this.pressedKeys = {
-            A: false,
-            D: false,
-            W: false,
-            S: false,
-        };
+        this.pressedButtons = {};
+        this.knownKeys.forEach(code => this.pressedButtons[kb.k2ch[code]] = false);
     }
 }
 
