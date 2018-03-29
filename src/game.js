@@ -8,6 +8,21 @@ let Box2D;
 const worldWidth = 16;
 const worldHeight = 9;
 export default class Game {
+    updateRender = () => {
+
+    };
+
+    updatePhysics = (elapsed) => {
+        this.totalTime += elapsed;
+        this.playerMovement.applyDirection(elapsed);
+        this.tryCleanRocks();
+        this.trySpawnBoulders();
+        this.processCallbacks();
+        this.world.Step(elapsed / 1000, 10, 10);
+        this.world.ClearForces();
+        this.debugDraw.update();
+    };
+
     constructor(canvas) {
         this.canvas = canvas;
     }
@@ -26,7 +41,7 @@ export default class Game {
         } else { // portrait, fit width
             scale = oldWidth / worldWidth;
             newWidth = oldWidth;
-            newHeight =  newWidth / rightProportion;
+            newHeight = newWidth / rightProportion;
         }
         window.scale = scale;
         this.canvas.style.width = `${newWidth}px`;
@@ -35,7 +50,7 @@ export default class Game {
 
     async start() {
         Box2D = await box2DLoader();
-        let {b2World, b2Vec2} = Box2D;
+        let { b2World, b2Vec2 } = Box2D;
         this.world = new b2World(new b2Vec2(0, 10));
         this.world.game = this;
         this.totalTime = 0;
@@ -43,6 +58,7 @@ export default class Game {
         this.debugDraw = new DebugDraw(this.canvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
         this.time = new Time(1000 / 60);
         this.gameObjects = {};
+        this.callbacks = [];
         this.addBoundaries();
         this.addBoulderSpawns();
         this.player = this.addPlayer();
@@ -83,9 +99,12 @@ export default class Game {
             id = objOrId;
         else
             throw new Error(`Bad unregister id ${objOrId}`);
-        const obj = this.gameObjects[id];
-        obj.__destroy__();
-        delete this.gameObjects[id];
+        this.callbacks.push(() => {
+            const obj = this.gameObjects[id];
+            this.world.DestroyBody(obj);
+            delete this.gameObjects[id];
+        });
+
     }
 
     addPlayer() {
@@ -131,8 +150,12 @@ export default class Game {
     trySpawnBoulders() {
         if (!this.lastSpawnTime)
             this.lastSpawnTime = 0;
-        const boulderCount = Object.values(this.gameObjects).filter(o => o.type === 'boulder').length;
-        if ((this.totalTime - this.lastSpawnTime > 3000) && boulderCount < 12) {
+        let existingBoulders = Object.values(this.gameObjects).filter(o => o.type === 'boulder');
+        if ((this.totalTime - this.lastSpawnTime > 3000)) {
+            if (existingBoulders.length >= 3) {
+                let counter = 0;
+                existingBoulders.forEach(b => counter++ < 3 ? this.breakBoulder(b) : null);
+            }
             Object.values(this.gameObjects).filter(o => o.type === 'spawn').forEach(sp => {
                 const spawnPos = sp.GetWorldCenter();
                 const boulder = this.makeRectangleImpl(spawnPos.get_x(), spawnPos.get_y() + 1, 0.5, 0.5, true);
@@ -144,19 +167,31 @@ export default class Game {
     }
 
     breakBoulder(body) {
-
+        const spawnPos = body.GetPosition();
+        this.unregisterObj(body);
+        this.callbacks.push(() => {
+            for (let i = 0; i < 3; ++i) {
+                const rock = this.makeRectangleImpl(spawnPos.get_x() + (Math.random() - 0.5),
+                    spawnPos.get_y(), Math.random() / 4, Math.random() / 4, true);
+                rock.type = 'rock';
+                this.registerObj(rock);
+            }
+        })
     }
 
-    updateRender = () => {
+    tryCleanRocks() {
+        if (!this.lastCleanTime)
+            this.lastCleanTime = 0;
+        let existingRocks = Object.values(this.gameObjects).filter(o => o.type === 'rock');
+        if ((this.totalTime - this.lastCleanTime > 1000) && existingRocks.length > 30) {
+            let counter = 0;
+            existingRocks.forEach(r => counter++ < 9 ? this.unregisterObj(r) : null);
+        }
+    }
 
-    };
-
-    updatePhysics = (elapsed) => {
-        this.totalTime+=elapsed;
-        this.playerMovement.applyDirection(elapsed);
-        this.trySpawnBoulders();
-        this.world.Step(elapsed / 1000, 10, 10);
-        this.world.ClearForces();
-        this.debugDraw.update();
-    };
+    processCallbacks() {
+        while (this.callbacks.length > 0) {
+            this.callbacks.shift()();
+        }
+    }
 }
