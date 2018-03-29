@@ -43,14 +43,20 @@ export default class Game {
         const bodyA = contact.GetFixtureA().GetBody();
         const bodyB = contact.GetFixtureB().GetBody();
         if (bodyA.type === 'bullet') {
-            this.unregisterObj(bodyA);
+            if (bodyB.type !== 'bullet' && bodyB.type !== 'player')
+                this.unregisterObj(bodyA);
             if (bodyB.type === 'boulder')
                 this.breakBoulder(bodyB);
+            if (bodyB.type === 'rock')
+                this.unregisterObj(bodyB);
         }
         if (bodyB.type === 'bullet') {
-            this.unregisterObj(bodyB);
+            if (bodyA.type !== 'bullet' && bodyA.type !== 'player')
+                this.unregisterObj(bodyB);
             if (bodyA.type === 'boulder')
                 this.breakBoulder(bodyA);
+            if (bodyA.type === 'rock')
+                this.unregisterObj(bodyA);
         }
     };
 
@@ -287,7 +293,7 @@ export default class Game {
             const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
             impulseVec.op_mul(50);
             bullet.ApplyForceToCenter(impulseVec);
-            bullet.SetAngularVelocity(5);
+            bullet.SetAngularVelocity(8);
             impulseVec.__destroy__();
             this.lastShootTime = this.totalTime;
         }
