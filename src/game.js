@@ -13,13 +13,13 @@ const wallSize = 1;
 const map = [
     ['x', 'x', 'x', 'x', 's', 'x', 's', 'x', 's', 'x', 's', 'x', 'x', 's', 'x', 'x',],
     ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
-    ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
-    ['x', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
+    ['s', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', 'x',],
+    ['x', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 's',],
     ['x', ' ', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
-    ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x', 'x', ' ', ' ', ' ', 'x',],
+    ['s', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', ' ', 's',],
     ['x', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', 'x',],
     ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
-    ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',],
+    ['x', 'x', 'x', 'x', 's', 'x', 'x', 's', 'x', 'x', 's', 'x', 'x', 'x', 's', 'x',],
 ];
 
 const vec2Point = (vec) => {
@@ -258,8 +258,15 @@ export default class Game {
             Object.values(this.gameObjects).filter(o => o.type === 'spawn').forEach(sp => {
                 const spawnPos = sp.GetWorldCenter();
                 let boulderSize = 0.5;
-                const boulder = this.makeRectangleImpl(spawnPos.get_x(), spawnPos.get_y() + 1, boulderSize, boulderSize, true);
+                let shift = new Box2D.b2Vec2(worldWidth/2 - spawnPos.get_x(), worldHeight /2 - spawnPos.get_y());
+                shift.Normalize();
+                shift.op_mul(boulderSize);
+                const boulder = this.makeRectangleImpl(spawnPos.get_x() + shift.get_x(), spawnPos.get_y() + shift.get_y(), boulderSize, boulderSize, true);
                 boulder.type = 'boulder';
+                shift.Normalize();
+                shift.op_mul(100);
+                boulder.ApplyForceToCenter(shift);
+                shift.__destroy__();
                 boulder.image = this.getSquareSprite('spelunky', 16, 48, 16, 64, 80, boulderSize, boulder.GetPosition());
                 this.registerObj(boulder);
             });
@@ -293,9 +300,10 @@ export default class Game {
             this.lastCleanTime = 0;
         let existingRocks = Object.values(this.gameObjects).filter(o => o.type === 'rock');
         let spawns = Object.values(this.gameObjects).filter(o => o.type === 'spawn');
-        if ((this.totalTime - this.lastCleanTime > 1000) && existingRocks.length > 30) {
+        if ((this.totalTime - this.lastCleanTime > 1000) && existingRocks.length > spawns.length * 10) {
             let counter = 0;
-            existingRocks.forEach(r => counter++ < spawns.lengt * 3 ? this.unregisterObj(r) : null);
+            existingRocks.forEach(r => counter++ < spawns.length * 3 ? this.unregisterObj(r) : null);
+            this.lastCleanTime = this.totalTime;
         }
     }
 
