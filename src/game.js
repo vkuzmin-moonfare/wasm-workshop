@@ -194,7 +194,7 @@ export default class Game {
         this.callbacks.push(() => {
             for (let i = 0; i < 3; ++i) {
                 const rock = this.makeRectangleImpl(spawnPos.get_x() + (Math.random() - 0.5),
-                    spawnPos.get_y(), Math.random() / 4, Math.random() / 4, true);
+                    spawnPos.get_y(), Math.max(0.05, Math.random() / 4), Math.max(0.05, Math.random() / 4), true);
                 rock.type = 'rock';
                 this.registerObj(rock);
             }
