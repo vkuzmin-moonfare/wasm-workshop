@@ -17,7 +17,6 @@ class Movement {
         if (this.knownKeys.indexOf(e.which) > -1)
         {
             this.pressedButtons[kb.k2ch[e.which]] = false;
-            return false;
         }
         this.recalculateAccelerationDirection();
         return false;

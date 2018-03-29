@@ -152,7 +152,7 @@ export default class Game {
             this.lastSpawnTime = 0;
         let existingBoulders = Object.values(this.gameObjects).filter(o => o.type === 'boulder');
         if ((this.totalTime - this.lastSpawnTime > 3000)) {
-            if (existingBoulders.length >= 3) {
+            if (existingBoulders.length >= 12) {
                 let counter = 0;
                 existingBoulders.forEach(b => counter++ < 3 ? this.breakBoulder(b) : null);
             }
