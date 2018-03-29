@@ -249,10 +249,11 @@ export default class Game {
         if (!this.lastSpawnTime)
             this.lastSpawnTime = 0;
         let existingBoulders = Object.values(this.gameObjects).filter(o => o.type === 'boulder');
+        let spawns = Object.values(this.gameObjects).filter(o => o.type === 'spawn');
         if ((this.totalTime - this.lastSpawnTime > 3000)) {
             if (existingBoulders.length >= 12) {
                 let counter = 0;
-                existingBoulders.forEach(b => counter++ < 3 ? this.breakBoulder(b) : null);
+                existingBoulders.forEach(b => counter++ < spawns.length ? this.breakBoulder(b) : null);
             }
             Object.values(this.gameObjects).filter(o => o.type === 'spawn').forEach(sp => {
                 const spawnPos = sp.GetWorldCenter();
@@ -291,9 +292,10 @@ export default class Game {
         if (!this.lastCleanTime)
             this.lastCleanTime = 0;
         let existingRocks = Object.values(this.gameObjects).filter(o => o.type === 'rock');
+        let spawns = Object.values(this.gameObjects).filter(o => o.type === 'spawn');
         if ((this.totalTime - this.lastCleanTime > 1000) && existingRocks.length > 30) {
             let counter = 0;
-            existingRocks.forEach(r => counter++ < 9 ? this.unregisterObj(r) : null);
+            existingRocks.forEach(r => counter++ < spawns.lengt * 3 ? this.unregisterObj(r) : null);
         }
     }
 
