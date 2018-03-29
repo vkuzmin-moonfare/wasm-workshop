@@ -13,7 +13,17 @@ const vec2Point = (vec) => {
 };
 export default class Game {
     updateGraphics = () => {
-        this.player.image.position = vec2Point(this.player.GetPosition());
+        Object.values(this.gameObjects).forEach(obj => {
+            if (obj.image) {
+                obj.image.position = vec2Point(obj.GetPosition());
+                const newAngleRad = obj.GetTransform().get_q().GetAngle();
+                const newAngleDeg = newAngleRad / Math.PI * 180;
+                if (!obj.image.oldRot)
+                    obj.image.oldRot = newAngleDeg;
+                obj.image.rotate(newAngleDeg - obj.image.oldRot);
+                obj.image.oldRot = newAngleDeg;
+            }
+        });
         Paper.view.draw();
     };
 
@@ -27,6 +37,21 @@ export default class Game {
         this.world.Step(elapsed / 1000, 10, 10);
         this.world.ClearForces();
         this.debugDraw.update();
+    };
+    onContact = (contactPtr) => {
+        const contact = Box2D.wrapPointer(contactPtr, Box2D.b2Contact);
+        const bodyA = contact.GetFixtureA().GetBody();
+        const bodyB = contact.GetFixtureB().GetBody();
+        if (bodyA.type === 'bullet') {
+            this.unregisterObj(bodyA);
+            if (bodyB.type === 'boulder')
+                this.breakBoulder(bodyB);
+        }
+        if (bodyB.type === 'bullet') {
+            this.unregisterObj(bodyB);
+            if (bodyA.type === 'boulder')
+                this.breakBoulder(bodyA);
+        }
     };
 
     constructor(debugCanvas, graphicsCanvas) {
@@ -74,6 +99,7 @@ export default class Game {
         this.addBoundaries();
         this.addBoulderSpawns();
         this.player = this.addPlayer();
+        this.registerObj(this.player);
         this.playerMovement = new Movement(this.player, Box2D);
         const d = 0.5;
         this.offsetByDir = {
@@ -127,6 +153,9 @@ export default class Game {
             this.destroying[id] = true;
             this.callbacks.push(() => {
                 const obj = this.gameObjects[id];
+                if (obj.image)
+                    obj.image.remove();
+                delete obj.image;
                 this.world.DestroyBody(obj);
                 delete this.gameObjects[id];
                 delete this.destroying[id];
@@ -153,21 +182,22 @@ export default class Game {
         let bodyShape = new Box2D.b2PolygonShape();
         bodyShape.SetAsBox(halfWidth, halfHeight);
         body.CreateFixture(bodyShape, 1);
-
         // graphics
-        body.image = this.getSprite('spelunky', 0, 16, 16, 16, 64, 80, 0.5 * window.scale, vec2Point(body.GetPosition()));
+        body.image = this.getSquareSprite('spelunky', 0, 16, 16, 64, 80, 0.5, body.GetPosition());
         return body;
     }
 
-    getSprite(name, xOffset, yOffset, xSize, ySize, totalX, totalY, fitX, position) {
+    getSquareSprite(name, xOffset, yOffset, xSize, totalX, totalY, physicalSize, physicalPos) {
         const raster = new Paper.Raster(name);
-        raster.position = new Paper.Point(position.x + (totalX / 2 - xOffset - xSize / 2), position.y + (totalY / 2 - yOffset - ySize / 2));
+        const position = vec2Point(physicalPos);
+        const fitToSize = physicalSize * window.scale;
+        raster.position = new Paper.Point(position.x + (totalX / 2 - xOffset - xSize / 2), position.y + (totalY / 2 - yOffset - xSize / 2));
         const path = new Paper.Shape.Rectangle({
             position: position,
-            size: new Paper.Size(xSize, ySize),
+            size: new Paper.Size(xSize, xSize),
         });
         const group = new Paper.Group([path, raster]);
-        group.scale(fitX / xSize);
+        group.scale(fitToSize / xSize);
         group.clipped = true;
         return group;
     }
@@ -247,14 +277,17 @@ export default class Game {
             let x = playerPos.get_x() + offsetX;
             let offsetY = offsetByDir.get_y();
             let y = playerPos.get_y() + offsetY;
-            const bullet = this.makeRectangleImpl(x, y, 0.1, 0.1, true);
+            const bulletSize = 0.3;
+            const bullet = this.makeRectangleImpl(x, y, bulletSize, bulletSize, true);
             bullet.type = 'bullet';
             bullet.SetBullet(true);
+            bullet.image = this.getSquareSprite('pickaxe', 0, 0, 75, 75, 75, bulletSize, bullet.GetPosition());
+            bullet.SetGravityScale(0.5);
             this.registerObj(bullet);
-            const rightDir = this.offsetByDir.R;
             const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
             impulseVec.op_mul(50);
             bullet.ApplyForceToCenter(impulseVec);
+            bullet.SetAngularVelocity(5);
             impulseVec.__destroy__();
             this.lastShootTime = this.totalTime;
         }
@@ -263,22 +296,6 @@ export default class Game {
     getAngle(v1, v2) {
         return Math.atan2(v1.x * v2.y - v1.y * v2.x, v1.x * v2.x + v1.y * v2.y);
     }
-
-    onContact = (contactPtr) => {
-        const contact = Box2D.wrapPointer(contactPtr, Box2D.b2Contact);
-        const bodyA = contact.GetFixtureA().GetBody();
-        const bodyB = contact.GetFixtureB().GetBody();
-        if (bodyA.type === 'bullet') {
-            this.unregisterObj(bodyA);
-            if (bodyB.type === 'boulder')
-                this.breakBoulder(bodyB);
-        }
-        if (bodyB.type === 'bullet') {
-            this.unregisterObj(bodyB);
-            if (bodyA.type === 'boulder')
-                this.breakBoulder(bodyA);
-        }
-    };
 
     setupContactListener() {
         const listener = new Box2D.JSContactListener();
