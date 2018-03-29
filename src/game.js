@@ -3,13 +3,18 @@ import DebugDraw from './DebugDraw';
 import Time from './time';
 import Movement from './controls';
 import uuid from 'uuid';
+import Paper from 'paper';
 
 let Box2D;
 const worldWidth = 16;
 const worldHeight = 9;
+const vec2Point = (vec) => {
+    return new Paper.Point(vec.get_x() * window.scale, vec.get_y() * window.scale);
+};
 export default class Game {
-    updateRender = () => {
-
+    updateGraphics = () => {
+        this.player.image.position = vec2Point(this.player.GetPosition());
+        Paper.view.draw();
     };
 
     updatePhysics = (elapsed) => {
@@ -24,13 +29,14 @@ export default class Game {
         this.debugDraw.update();
     };
 
-    constructor(canvas) {
-        this.canvas = canvas;
+    constructor(debugCanvas, graphicsCanvas) {
+        this.debugCanvas = debugCanvas;
+        this.graphicsCanvas = graphicsCanvas;
     }
 
     applyProportionateDimensions() {
-        const oldWidth = this.canvas.clientWidth;
-        const oldHeight = this.canvas.clientHeight;
+        const oldWidth = this.debugCanvas.clientWidth;
+        const oldHeight = this.debugCanvas.clientHeight;
         let newWidth, newHeight, scale;
         const proportion = oldWidth / oldHeight;
         let rightProportion = worldWidth / worldHeight;
@@ -45,8 +51,10 @@ export default class Game {
             newHeight = newWidth / rightProportion;
         }
         window.scale = scale;
-        this.canvas.style.width = `${newWidth}px`;
-        this.canvas.style.height = `${newHeight}px`;
+        this.debugCanvas.style.width = `${newWidth}px`;
+        this.debugCanvas.style.height = `${newHeight}px`;
+        this.graphicsCanvas.style.width = `${newWidth}px`;
+        this.graphicsCanvas.style.height = `${newHeight}px`;
     }
 
     async start() {
@@ -57,7 +65,8 @@ export default class Game {
         this.setupContactListener();
         this.totalTime = 0;
         this.applyProportionateDimensions();
-        this.debugDraw = new DebugDraw(this.canvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
+        this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
+        Paper.setup(this.graphicsCanvas);
         this.time = new Time(1000 / 60);
         this.gameObjects = {};
         this.callbacks = [];
@@ -77,7 +86,7 @@ export default class Game {
             L: new b2Vec2(-d, 0),
             UL: new b2Vec2(-d, -d),
         };
-        this.time.setInterval(this.updatePhysics, this.updateRender);
+        this.time.setInterval(this.updatePhysics, this.updateGraphics);
     }
 
     addBoundaries() {
@@ -128,7 +137,7 @@ export default class Game {
 
     addPlayer() {
         const width = 0.5;
-        const height = 1.2;
+        const height = 0.5;
         const x = worldWidth / 2;
         const y = worldHeight - 1;
         const bodyDef = new Box2D.b2BodyDef();
@@ -144,7 +153,23 @@ export default class Game {
         let bodyShape = new Box2D.b2PolygonShape();
         bodyShape.SetAsBox(halfWidth, halfHeight);
         body.CreateFixture(bodyShape, 1);
+
+        // graphics
+        body.image = this.getSprite('spelunky', 0, 16, 16, 16, 64, 80, 0.5 * window.scale, vec2Point(body.GetPosition()));
         return body;
+    }
+
+    getSprite(name, xOffset, yOffset, xSize, ySize, totalX, totalY, fitX, position) {
+        const raster = new Paper.Raster(name);
+        raster.position = new Paper.Point(position.x + (totalX / 2 - xOffset - xSize / 2), position.y + (totalY / 2 - yOffset - ySize / 2));
+        const path = new Paper.Shape.Rectangle({
+            position: position,
+            size: new Paper.Size(xSize, ySize),
+        });
+        const group = new Paper.Group([path, raster]);
+        group.scale(fitX / xSize);
+        group.clipped = true;
+        return group;
     }
 
     makeRectangleImpl(x, y, width, height, dynamic) {

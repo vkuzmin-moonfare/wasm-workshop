@@ -2,6 +2,7 @@ import React from 'react';
 import Game from './game';
 import initBox2D from "./box2d";
 import './Interface.css';
+import Sprites from './Sprites';
 
 export default class Interface extends React.Component {
     state = {
@@ -11,7 +12,7 @@ export default class Interface extends React.Component {
 
     start = async () => {
         this.setState({ loading: true });
-        this.game = new Game(this.canvas);
+        this.game = new Game(this.debugCanvas, this.graphicsCanvas);
         await this.game.start();
         this.setState({ started: true, loading: false });
     };
@@ -29,8 +30,12 @@ export default class Interface extends React.Component {
         console.timeEnd('load');
     };
 
-    saveCanvas = (canvas) => {
-        this.canvas = canvas;
+    saveDebugCanvas = (canvas) => {
+        this.debugCanvas = canvas;
+    };
+
+    saveGraphicsCanvas = (canvas) => {
+        this.graphicsCanvas = canvas;
     };
 
     componentDidMount() {
@@ -39,7 +44,9 @@ export default class Interface extends React.Component {
 
     render() {
         return <div className="interface">
-            <canvas className="game" width={1} height={1} ref={this.saveCanvas}/>
+            <canvas className="game" width={1} height={1} ref={this.saveGraphicsCanvas}/>
+            <canvas className="game" width={1} height={1} ref={this.saveDebugCanvas}/>
+            <Sprites/>
             {!this.state.started && <div className="fullHeight controlsLevel">
                 {!this.state.loading && <div className="controlsLevel">
                     <button onClick={this.testBox2D}>Test Box2D</button>
