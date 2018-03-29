@@ -37,27 +37,33 @@ export default class Game {
         let {b2World, b2Vec2} = Box2D;
         this.world = new b2World(new b2Vec2(0, 10));
         this.world.game = this;
+        this.totalTime = 0;
         this.applyProportionateDimensions();
         this.debugDraw = new DebugDraw(this.canvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
         this.time = new Time(1000 / 60);
-        this.time.setInterval(this.updatePhysics, this.updateRender);
+        this.gameObjects = [];
         this.addBoundaries();
-        this.addBoulders();
+        this.addBoulderSpawns();
         this.player = this.addPlayer();
         this.playerMovement = new Movement(this.player, Box2D);
+        this.time.setInterval(this.updatePhysics, this.updateRender);
     }
 
     addBoundaries() {
-        this.makeRectangleImpl(this.world, worldWidth / 2, 0, worldWidth, 1, false);
-        this.makeRectangleImpl(this.world, 0, worldHeight / 2, 1, worldHeight, false);
-        this.makeRectangleImpl(this.world, worldWidth, worldHeight / 2, 1, worldHeight, false);
-        this.makeRectangleImpl(this.world, worldWidth / 2, worldHeight, worldWidth, 1, false);
+        this.makeRectangleImpl(worldWidth / 2, 0, worldWidth, 1, false);
+        this.makeRectangleImpl(0, worldHeight / 2, 1, worldHeight, false);
+        this.makeRectangleImpl(worldWidth, worldHeight / 2, 1, worldHeight, false);
+        this.makeRectangleImpl(worldWidth / 2, worldHeight, worldWidth, 1, false);
     }
 
-    addBoulders() {
-        this.makeRectangleImpl(this.world, worldWidth / 2, 3, 1, 1, true);
-        this.makeRectangleImpl(this.world, worldWidth / 2 + 3, 3, 1, 1, true);
-        this.makeRectangleImpl(this.world, worldWidth / 2 - 3, 3, 1, 1, true);
+    addBoulderSpawns() {
+        const spawn1 = this.makeRectangleImpl(worldWidth / 2, 0.5, 0.5, 0.5, false);
+        spawn1.type = 'spawn';
+        const spawn2 = this.makeRectangleImpl(worldWidth / 2 + 3, 0.5, 0.5, 0.5, false);
+        spawn2.type = 'spawn';
+        const spawn3 = this.makeRectangleImpl(worldWidth / 2 - 3, 0.5, 0.5, 0.5, false);
+        spawn3.type = 'spawn';
+        this.gameObjects.push(spawn1, spawn2, spawn3);
     }
 
     addPlayer() {
@@ -81,22 +87,41 @@ export default class Game {
         return body;
     }
 
-    makeRectangleImpl(world, x, y, width, height, dynamic) {
+    makeRectangleImpl(x, y, width, height, dynamic) {
         if ((!x && x !== 0) || (!y && y !== 0)) {
             console.warn('Bad x/y', x, y);
             return null;
         }
         const bodyDef = new Box2D.b2BodyDef();
+        const pos = new Box2D.b2Vec2(x, y);
         if (dynamic)
             bodyDef.set_type(Box2D.b2_dynamicBody);
-        const body = world.CreateBody(bodyDef);
+        bodyDef.set_position(pos);
+        const body = this.world.CreateBody(bodyDef);
+        bodyDef.__destroy__();
+        pos.__destroy__();
         const shape = new Box2D.b2PolygonShape();
         const halfWidth = width / 2;
         const halfHeight = height / 2;
-        shape.SetAsBox(halfWidth, halfHeight, new Box2D.b2Vec2(x, y), 0);
+        shape.SetAsBox(halfWidth, halfHeight);
         body.CreateFixture(shape, 1);
         shape.__destroy__();
         return body;
+    }
+
+    trySpawnBoulders() {
+        if (!this.lastSpawnTime)
+            this.lastSpawnTime = 0;
+        const boulderCount = this.gameObjects.filter(o => o.type === 'boulder').length;
+        if ((this.totalTime - this.lastSpawnTime > 3000) && boulderCount < 12) {
+            this.gameObjects.filter(o => o.type === 'spawn').forEach(sp => {
+                const spawnPos = sp.GetWorldCenter();
+                const boulder = this.makeRectangleImpl(spawnPos.get_x(), spawnPos.get_y() + 1, 0.5, 0.5, true);
+                boulder.type = 'boulder';
+                this.gameObjects.push(boulder);
+            });
+            this.lastSpawnTime = this.totalTime;
+        }
     }
 
     updateRender = () => {
@@ -104,7 +129,9 @@ export default class Game {
     };
 
     updatePhysics = (elapsed) => {
+        this.totalTime+=elapsed;
         this.playerMovement.applyDirection(elapsed);
+        this.trySpawnBoulders();
         this.world.Step(elapsed / 1000, 10, 10);
         this.world.ClearForces();
         this.debugDraw.update();
