@@ -2,6 +2,7 @@ import box2DLoader from './box2d';
 import DebugDraw from './DebugDraw';
 import Time from './time';
 import Movement from './kineticMovement';
+import uuid from 'uuid';
 
 let Box2D;
 const worldWidth = 16;
@@ -41,7 +42,7 @@ export default class Game {
         this.applyProportionateDimensions();
         this.debugDraw = new DebugDraw(this.canvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
         this.time = new Time(1000 / 60);
-        this.gameObjects = [];
+        this.gameObjects = {};
         this.addBoundaries();
         this.addBoulderSpawns();
         this.player = this.addPlayer();
@@ -63,12 +64,33 @@ export default class Game {
         spawn2.type = 'spawn';
         const spawn3 = this.makeRectangleImpl(worldWidth / 2 - 3, 0.5, 0.5, 0.5, false);
         spawn3.type = 'spawn';
-        this.gameObjects.push(spawn1, spawn2, spawn3);
+        this.registerObj(spawn1);
+        this.registerObj(spawn2);
+        this.registerObj(spawn3);
+    }
+
+    registerObj(obj) {
+        let id = uuid.v4();
+        obj.id = id;
+        this.gameObjects[id] = obj;
+    }
+
+    unregisterObj(objOrId) {
+        let id;
+        if (objOrId.id)
+            id = objOrId.id;
+        else if (typeof objOrId === 'string')
+            id = objOrId;
+        else
+            throw new Error(`Bad unregister id ${objOrId}`);
+        const obj = this.gameObjects[id];
+        obj.__destroy__();
+        delete this.gameObjects[id];
     }
 
     addPlayer() {
         const width = 0.5;
-        const height = 0.5;
+        const height = 1.2;
         const x = worldWidth / 2;
         const y = worldHeight - 1;
         const bodyDef = new Box2D.b2BodyDef();
@@ -81,9 +103,6 @@ export default class Game {
         let center = new Box2D.b2Vec2(x, y);
         bodyShape.SetAsBox(halfWidth, halfHeight, center, 0);
         body.CreateFixture(bodyShape, 1);
-        // let baseShape = new Box2D.b2PolygonShape();
-        // baseShape.SetAsBox(width * 2, 0.01, new Box2D.b2Vec2(x, y + halfHeight), 0);
-        // body.CreateFixture(baseShape, 1000);
         return body;
     }
 
@@ -112,16 +131,20 @@ export default class Game {
     trySpawnBoulders() {
         if (!this.lastSpawnTime)
             this.lastSpawnTime = 0;
-        const boulderCount = this.gameObjects.filter(o => o.type === 'boulder').length;
+        const boulderCount = Object.values(this.gameObjects).filter(o => o.type === 'boulder').length;
         if ((this.totalTime - this.lastSpawnTime > 3000) && boulderCount < 12) {
-            this.gameObjects.filter(o => o.type === 'spawn').forEach(sp => {
+            Object.values(this.gameObjects).filter(o => o.type === 'spawn').forEach(sp => {
                 const spawnPos = sp.GetWorldCenter();
                 const boulder = this.makeRectangleImpl(spawnPos.get_x(), spawnPos.get_y() + 1, 0.5, 0.5, true);
                 boulder.type = 'boulder';
-                this.gameObjects.push(boulder);
+                this.registerObj(boulder);
             });
             this.lastSpawnTime = this.totalTime;
         }
+    }
+
+    breakBoulder(body) {
+
     }
 
     updateRender = () => {
