@@ -54,12 +54,14 @@ export default class Game {
         let { b2World, b2Vec2 } = Box2D;
         this.world = new b2World(new b2Vec2(0, 10));
         this.world.game = this;
+        this.setupContactListener();
         this.totalTime = 0;
         this.applyProportionateDimensions();
         this.debugDraw = new DebugDraw(this.canvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
         this.time = new Time(1000 / 60);
         this.gameObjects = {};
         this.callbacks = [];
+        this.destroying = {};
         this.addBoundaries();
         this.addBoulderSpawns();
         this.player = this.addPlayer();
@@ -111,11 +113,16 @@ export default class Game {
             id = objOrId;
         else
             throw new Error(`Bad unregister id ${objOrId}`);
-        this.callbacks.push(() => {
-            const obj = this.gameObjects[id];
-            this.world.DestroyBody(obj);
-            delete this.gameObjects[id];
-        });
+
+        if (!this.destroying[id]) {
+            this.destroying[id] = true;
+            this.callbacks.push(() => {
+                const obj = this.gameObjects[id];
+                this.world.DestroyBody(obj);
+                delete this.gameObjects[id];
+                delete this.destroying[id];
+            });
+        }
 
     }
 
@@ -216,11 +223,12 @@ export default class Game {
             let offsetY = offsetByDir.get_y();
             let y = playerPos.get_y() + offsetY;
             const bullet = this.makeRectangleImpl(x, y, 0.1, 0.1, true);
+            bullet.type = 'bullet';
             bullet.SetBullet(true);
             this.registerObj(bullet);
             const rightDir = this.offsetByDir.R;
             const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
-            impulseVec.op_mul(1000);
+            impulseVec.op_mul(50);
             bullet.ApplyForceToCenter(impulseVec);
             impulseVec.__destroy__();
             this.lastShootTime = this.totalTime;
@@ -229,6 +237,34 @@ export default class Game {
 
     getAngle(v1, v2) {
         return Math.atan2(v1.x * v2.y - v1.y * v2.x, v1.x * v2.x + v1.y * v2.y);
+    }
+
+    onContact = (contactPtr) => {
+        const contact = Box2D.wrapPointer(contactPtr, Box2D.b2Contact);
+        const bodyA = contact.GetFixtureA().GetBody();
+        const bodyB = contact.GetFixtureB().GetBody();
+        if (bodyA.type === 'bullet') {
+            this.unregisterObj(bodyA);
+            if (bodyB.type === 'boulder')
+                this.breakBoulder(bodyB);
+        }
+        if (bodyB.type === 'bullet') {
+            this.unregisterObj(bodyB);
+            if (bodyA.type === 'boulder')
+                this.breakBoulder(bodyA);
+        }
+    };
+
+    setupContactListener() {
+        const listener = new Box2D.JSContactListener();
+        listener.BeginContact = this.onContact;
+        listener.EndContact = function () {
+        };
+        listener.PreSolve = function () {
+        };
+        listener.PostSolve = function () {
+        };
+        this.world.SetContactListener(listener);
     }
 
     processCallbacks() {
