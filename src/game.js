@@ -18,6 +18,7 @@ export default class Game {
         this.tryCleanRocks();
         this.trySpawnBoulders();
         this.processCallbacks();
+        this.tryShoot();
         this.world.Step(elapsed / 1000, 10, 10);
         this.world.ClearForces();
         this.debugDraw.update();
@@ -63,6 +64,17 @@ export default class Game {
         this.addBoulderSpawns();
         this.player = this.addPlayer();
         this.playerMovement = new Movement(this.player, Box2D);
+        const d = 0.5;
+        this.offsetByDir = {
+            U: new b2Vec2(0, -d),
+            UR: new b2Vec2(d, -d),
+            R: new b2Vec2(d, 0),
+            DR: new b2Vec2(d, d),
+            D: new b2Vec2(0, d),
+            DL: new b2Vec2(-d, d),
+            L: new b2Vec2(-d, 0),
+            UL: new b2Vec2(-d, -d),
+        };
         this.time.setInterval(this.updatePhysics, this.updateRender);
     }
 
@@ -114,13 +126,16 @@ export default class Game {
         const y = worldHeight - 1;
         const bodyDef = new Box2D.b2BodyDef();
         bodyDef.set_type(Box2D.b2_dynamicBody);
+        let center = new Box2D.b2Vec2(x, y);
+        bodyDef.set_position(center);
         const body = this.world.CreateBody(bodyDef);
+        bodyDef.__destroy__();
+        center.__destroy__();
         body.SetFixedRotation(true);
         const halfWidth = width / 2;
         const halfHeight = height / 2;
         let bodyShape = new Box2D.b2PolygonShape();
-        let center = new Box2D.b2Vec2(x, y);
-        bodyShape.SetAsBox(halfWidth, halfHeight, center, 0);
+        bodyShape.SetAsBox(halfWidth, halfHeight);
         body.CreateFixture(bodyShape, 1);
         return body;
     }
@@ -187,6 +202,33 @@ export default class Game {
             let counter = 0;
             existingRocks.forEach(r => counter++ < 9 ? this.unregisterObj(r) : null);
         }
+    }
+
+    tryShoot() {
+        if (!this.lastShootTime)
+            this.lastShootTime = 0;
+        let shootDirection = this.playerMovement.getShootDirection();
+        let offsetByDir = this.offsetByDir[shootDirection];
+        if ((this.totalTime - this.lastShootTime > 100) && offsetByDir) {
+            const playerPos = this.player.GetPosition();
+            let offsetX = offsetByDir.get_x();
+            let x = playerPos.get_x() + offsetX;
+            let offsetY = offsetByDir.get_y();
+            let y = playerPos.get_y() + offsetY;
+            const bullet = this.makeRectangleImpl(x, y, 0.1, 0.1, true);
+            bullet.SetBullet(true);
+            this.registerObj(bullet);
+            const rightDir = this.offsetByDir.R;
+            const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
+            impulseVec.op_mul(1000);
+            bullet.ApplyForceToCenter(impulseVec);
+            impulseVec.__destroy__();
+            this.lastShootTime = this.totalTime;
+        }
+    }
+
+    getAngle(v1, v2) {
+        return Math.atan2(v1.x * v2.y - v1.y * v2.x, v1.x * v2.x + v1.y * v2.y);
     }
 
     processCallbacks() {

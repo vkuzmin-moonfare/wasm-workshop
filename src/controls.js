@@ -24,9 +24,9 @@ class Movement {
 
     knownKeys = [
         kb.ch2k.Up,
+        kb.ch2k.Right,
         kb.ch2k.Down,
         kb.ch2k.Left,
-        kb.ch2k.Right,
         kb.ch2k.W,
         kb.ch2k.A,
         kb.ch2k.S,
@@ -53,8 +53,8 @@ class Movement {
         let dir = '';
         dir += this.pressedButtons.Up ? 'U' : '';
         dir += this.pressedButtons.Down ? 'D' : '';
-        dir += this.pressedButtons.Left ? 'L' : '';
         dir += this.pressedButtons.Right ? 'R' : '';
+        dir += this.pressedButtons.Left ? 'L' : '';
         return dir;
     }
 
