@@ -8,9 +8,24 @@ import Paper from 'paper';
 let Box2D;
 const worldWidth = 16;
 const worldHeight = 9;
+
+const wallSize = 1;
+const map = [
+    ['x', 'x', 'x', 'x', 's', 'x', 's', 'x', 's', 'x', 's', 'x', 'x', 's', 'x', 'x',],
+    ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
+    ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
+    ['x', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
+    ['x', ' ', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
+    ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x', 'x', ' ', ' ', ' ', 'x',],
+    ['x', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', 'x',],
+    ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
+    ['x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x',],
+];
+
 const vec2Point = (vec) => {
     return new Paper.Point(vec.get_x() * window.scale, vec.get_y() * window.scale);
 };
+
 export default class Game {
     updateGraphics = () => {
         Object.values(this.gameObjects).forEach(obj => {
@@ -25,6 +40,7 @@ export default class Game {
             }
         });
         Paper.view.draw();
+        this.debugDraw.update();
     };
 
     updatePhysics = (elapsed) => {
@@ -36,7 +52,6 @@ export default class Game {
         this.tryShoot();
         this.world.Step(elapsed / 1000, 10, 10);
         this.world.ClearForces();
-        this.debugDraw.update();
     };
     onContact = (contactPtr) => {
         const contact = Box2D.wrapPointer(contactPtr, Box2D.b2Contact);
@@ -102,8 +117,7 @@ export default class Game {
         this.gameObjects = {};
         this.callbacks = [];
         this.destroying = {};
-        this.addBoundaries();
-        this.addBoulderSpawns();
+        this.drawMap();
         this.player = this.addPlayer();
         this.registerObj(this.player);
         this.playerMovement = new Movement(this.player, Box2D);
@@ -121,23 +135,24 @@ export default class Game {
         this.time.setInterval(this.updatePhysics, this.updateGraphics);
     }
 
-    addBoundaries() {
-        this.makeRectangleImpl(worldWidth / 2, 0, worldWidth, 1, false);
-        this.makeRectangleImpl(0, worldHeight / 2, 1, worldHeight, false);
-        this.makeRectangleImpl(worldWidth, worldHeight / 2, 1, worldHeight, false);
-        this.makeRectangleImpl(worldWidth / 2, worldHeight, worldWidth, 1, false);
-    }
-
-    addBoulderSpawns() {
-        const spawn1 = this.makeRectangleImpl(worldWidth / 2, 0.5, 0.5, 0.5, false);
-        spawn1.type = 'spawn';
-        const spawn2 = this.makeRectangleImpl(worldWidth / 2 + 3, 0.5, 0.5, 0.5, false);
-        spawn2.type = 'spawn';
-        const spawn3 = this.makeRectangleImpl(worldWidth / 2 - 3, 0.5, 0.5, 0.5, false);
-        spawn3.type = 'spawn';
-        this.registerObj(spawn1);
-        this.registerObj(spawn2);
-        this.registerObj(spawn3);
+    drawMap() {
+        for (let i = 0; i < map.length; ++i) {
+            for (let j = 0; j < map[i].length; ++j) {
+                let mapSign = map[i][j];
+                let x = wallSize * j + wallSize / 2;
+                let y = wallSize * i + wallSize / 2;
+                if (mapSign === 'x') {
+                    const floor = this.makeRectangleImpl(x, y, wallSize, wallSize, false);
+                    this.registerObj(floor);
+                    floor.image = this.getSquareSprite('spelunky', 0, 32, 16, 64, 80, wallSize, floor.GetPosition());
+                }
+                else if (mapSign === 's') {
+                    const spawn = this.makeRectangleImpl(x, y, 0.1, 0.1, false);
+                    spawn.type = 'spawn';
+                    this.registerObj(spawn);
+                }
+            }
+        }
     }
 
     registerObj(obj) {
@@ -241,8 +256,10 @@ export default class Game {
             }
             Object.values(this.gameObjects).filter(o => o.type === 'spawn').forEach(sp => {
                 const spawnPos = sp.GetWorldCenter();
-                const boulder = this.makeRectangleImpl(spawnPos.get_x(), spawnPos.get_y() + 1, 0.5, 0.5, true);
+                let boulderSize = 0.5;
+                const boulder = this.makeRectangleImpl(spawnPos.get_x(), spawnPos.get_y() + 1, boulderSize, boulderSize, true);
                 boulder.type = 'boulder';
+                boulder.image = this.getSquareSprite('spelunky', 16, 48, 16, 64, 80, boulderSize, boulder.GetPosition());
                 this.registerObj(boulder);
             });
             this.lastSpawnTime = this.totalTime;
@@ -254,9 +271,17 @@ export default class Game {
         this.unregisterObj(body);
         this.callbacks.push(() => {
             for (let i = 0; i < 3; ++i) {
+                let width = Math.max(0.05, Math.random() / 4);
+                let height = Math.max(0.05, Math.random() / 4);
                 const rock = this.makeRectangleImpl(spawnPos.get_x() + (Math.random() - 0.5),
-                    spawnPos.get_y(), Math.max(0.05, Math.random() / 4), Math.max(0.05, Math.random() / 4), true);
+                    spawnPos.get_y(), width, height, true);
                 rock.type = 'rock';
+                rock.image = new Paper.Shape.Rectangle({
+                    point: vec2Point(rock.GetPosition()),
+                    size: new Paper.Size(width * window.scale, height * window.scale),
+                });
+                rock.image.fillColor = 'brown';
+                rock.image.strokeColor = 'brown';
                 this.registerObj(rock);
             }
         })

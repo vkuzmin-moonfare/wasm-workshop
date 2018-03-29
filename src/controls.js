@@ -34,7 +34,7 @@ class Movement {
     ];
 
     constructor(body, Box2D, groundY) {
-        this.maxVelocity = 5;
+        this.maxVelocity = 10;
         this.accelerationPerSecond = 5;
         this.decellerationPerSecond = 1;
         this.dragPerSecond = 0.5;
