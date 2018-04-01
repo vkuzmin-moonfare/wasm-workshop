@@ -67,6 +67,11 @@ class Movement {
         let controlsApplied = true;
         let addedVec;
         let contacts = this.body.GetContactList();
+        // let contact;
+        // do {
+        //     contact = contacts.get_next();
+        //     console.log(contact);
+        // } while(contact && contact.ptr !== 0)
         const isGrounded = contacts.ptr !== 0;
         let jumpMultiplier = isGrounded ? 10 : 0;
         if (direction === "W") {
