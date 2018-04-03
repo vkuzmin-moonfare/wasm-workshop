@@ -98,11 +98,11 @@ export default class Game {
         if (proportion > rightProportion) { // landscape, fit height
             scale = oldHeight / worldHeight;
             newHeight = oldHeight;
-            newWidth = rightProportion * newHeight;
+            newWidth = (rightProportion * newHeight).toFixed(0) - 100;
         } else { // portrait, fit width
             scale = oldWidth / worldWidth;
             newWidth = oldWidth;
-            newHeight = newWidth / rightProportion;
+            newHeight = (newWidth / rightProportion).toFixed(0) - 100;
         }
         window.scale = scale;
         this.debugCanvas.style.width = `${newWidth}px`;
@@ -121,7 +121,7 @@ export default class Game {
         this.totalTime = 0;
         this.applyProportionateDimensions();
         this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
-        Paper.setup(this.graphicsCanvas);
+        this.initPaperJs();
         let timeStep = 1000 / 30;
         this.time = new Time(timeStep);
         statsHeap.timeStep = timeStep;
@@ -144,6 +144,13 @@ export default class Game {
             UL: new b2Vec2(-d, -d),
         };
         this.time.setInterval(this.updatePhysics, this.updateGraphics);
+    }
+
+    initPaperJs() {
+        Paper.setup(this.graphicsCanvas);
+        const background = new Paper.Path.Rectangle(Paper.view.bounds);
+        background.fillColor = '#201F33';
+        background.sendToBack();
     }
 
     drawMap() {
