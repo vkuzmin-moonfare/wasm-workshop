@@ -3,6 +3,7 @@ import Game from './game';
 import initBox2D from "./box2d";
 import './Interface.css';
 import Sprites from './Sprites';
+import StatsPanel from "./StatsPanel";
 
 export default class Interface extends React.Component {
     state = {
@@ -11,10 +12,10 @@ export default class Interface extends React.Component {
     };
 
     start = async () => {
-        this.setState({ loading: true });
+        this.setState({loading: true});
         this.game = new Game(this.debugCanvas, this.graphicsCanvas);
         await this.game.start();
-        this.setState({ started: true, loading: false });
+        this.setState({started: true, loading: false});
     };
 
     testBox2D = async () => {
@@ -44,16 +45,19 @@ export default class Interface extends React.Component {
 
     render() {
         return <div className="interface">
-            <canvas className="game" width={1} height={1} ref={this.saveGraphicsCanvas}/>
-            <canvas className="game" width={1} height={1} ref={this.saveDebugCanvas}/>
-            <Sprites/>
-            {!this.state.started && <div className="fullHeight controlsLevel">
-                {!this.state.loading && <div className="controlsLevel">
-                    <button onClick={this.testBox2D}>Test Box2D</button>
-                    <button onClick={this.start}>Start!</button>
+            <div className="canvas">
+                <canvas className="graphicsCanvas" width={1} height={1} ref={this.saveGraphicsCanvas}/>
+                <canvas className="debugCanvas" width={1} height={1} ref={this.saveDebugCanvas}/>
+                <Sprites/>
+                {!this.state.started && <div className="fullHeight controlsLevel">
+                    {!this.state.loading && <div className="controlsLevel">
+                        <button onClick={this.testBox2D}>Test Box2D</button>
+                        <button onClick={this.start}>Start!</button>
+                    </div>}
+                    {this.state.loading && <div>Loading...</div>}
                 </div>}
-                {this.state.loading && <div>Loading...</div>}
-            </div>}
+            </div>
+            <StatsPanel/>
         </div>
     }
 }

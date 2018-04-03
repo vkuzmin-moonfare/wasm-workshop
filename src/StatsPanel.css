@@ -1,0 +1,29 @@
+.stats {
+  width: 300px;
+  padding: 10px;
+  border: solid #eee 1px;
+}
+
+.stats .header {
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: solid #eee 1px;
+}
+
+.stats .row {
+  padding-top: 10px;
+  height: 30px;
+}
+
+.stats .row {
+  border-bottom: solid #ddd 1px;
+}
+
+.stats .row .name {
+  width: 50px;
+  overflow: hidden;
+}
+
+.stats .row .value {
+  float: right;
+}

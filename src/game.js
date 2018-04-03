@@ -4,6 +4,8 @@ import Time from './time';
 import Movement from './controls';
 import uuid from 'uuid';
 import Paper from 'paper';
+import perf, {Measures} from './perf';
+import statsHeap from './stats-heap';
 
 let Box2D;
 const worldWidth = 16;
@@ -11,15 +13,15 @@ const worldHeight = 9;
 
 const wallSize = 1;
 const map = [
-    ['x', 'x', 'x', 'x', 's', 'x', 's', 'x', 's', 'x', 's', 'x', 'x', 's', 'x', 'x',],
+    ['x', 'x', 'x', 'x', 's', 'x', 's', 'x', 'x', 'x', 's', 'x', 'x', 's', 'x', 'x',],
     ['s', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
     ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
-    ['x', ' ', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 's',],
+    ['x', ' ', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x', ' ', 's',],
     ['x', ' ', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
-    ['s', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', ' ', 's',],
-    ['x', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', 'x',],
-    ['x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
-    ['x', 'x', 'x', 'x', 's', 'x', 'x', 's', 'x', 'x', 's', 'x', 'x', 'x', 's', 'x',],
+    ['x', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', ' ', 's',],
+    ['s', ' ', ' ', ' ', ' ', ' ', 'x', ' ', ' ', 'x', ' ', ' ', ' ', ' ', ' ', 'x',],
+    ['x', 'x', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'x',],
+    ['x', 'x', 's', 'x', 'x', 's', 'x', 'x', 's', 'x', 's', 'x', 'x', 's', 'x', 'x',],
 ];
 
 const vec2Point = (vec) => {
@@ -28,30 +30,36 @@ const vec2Point = (vec) => {
 
 export default class Game {
     updateGraphics = () => {
-        Object.values(this.gameObjects).forEach(obj => {
-            if (obj.image) {
-                obj.image.position = vec2Point(obj.GetPosition());
-                const newAngleRad = obj.GetTransform().get_q().GetAngle();
-                const newAngleDeg = newAngleRad / Math.PI * 180;
-                if (!obj.image.oldRot)
+        perf.markEvent(Measures.RenderFrameEvent);
+        perf.usingMeasure(Measures.RenderFrameTime, () => {
+            Object.values(this.gameObjects).forEach(obj => {
+                if (obj.image) {
+                    obj.image.position = vec2Point(obj.GetPosition());
+                    const newAngleRad = obj.GetTransform().get_q().GetAngle();
+                    const newAngleDeg = newAngleRad / Math.PI * 180;
+                    if (!obj.image.oldRot)
+                        obj.image.oldRot = newAngleDeg;
+                    obj.image.rotate(newAngleDeg - obj.image.oldRot);
                     obj.image.oldRot = newAngleDeg;
-                obj.image.rotate(newAngleDeg - obj.image.oldRot);
-                obj.image.oldRot = newAngleDeg;
-            }
+                }
+            });
+            Paper.view.draw();
+            this.debugDraw.update();
         });
-        Paper.view.draw();
-        this.debugDraw.update();
     };
 
     updatePhysics = (elapsed) => {
-        this.totalTime += elapsed;
-        this.playerMovement.applyDirection(elapsed);
-        this.tryCleanRocks();
-        this.trySpawnBoulders();
-        this.processCallbacks();
-        this.tryShoot();
-        this.world.Step(elapsed / 1000, 10, 10);
-        this.world.ClearForces();
+        perf.markEvent(Measures.PhysicsFrameEvent);
+        perf.usingMeasure(Measures.PhysicsFrameTime, () => {
+            this.totalTime += elapsed;
+            this.playerMovement.applyDirection(elapsed);
+            this.tryCleanRocks();
+            this.trySpawnBoulders();
+            this.processCallbacks();
+            this.tryShoot();
+            this.world.Step(elapsed / 1000, 10, 10);
+            this.world.ClearForces();
+        });
     };
     onContact = (contactPtr) => {
         const contact = Box2D.wrapPointer(contactPtr, Box2D.b2Contact);
@@ -104,6 +112,7 @@ export default class Game {
     }
 
     async start() {
+        perf.start();
         Box2D = await box2DLoader();
         let { b2World, b2Vec2 } = Box2D;
         this.world = new b2World(new b2Vec2(0, 10));
@@ -113,7 +122,9 @@ export default class Game {
         this.applyProportionateDimensions();
         this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
         Paper.setup(this.graphicsCanvas);
-        this.time = new Time(1000 / 60);
+        let timeStep = 1000 / 30;
+        this.time = new Time(timeStep);
+        statsHeap.timeStep = timeStep;
         this.gameObjects = {};
         this.callbacks = [];
         this.destroying = {};
