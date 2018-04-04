@@ -1,4 +1,4 @@
-import kb from "./keyboardCodes";
+import kb from "./keyboard-codes";
 
 let b2Vec2;
 let rightVec;

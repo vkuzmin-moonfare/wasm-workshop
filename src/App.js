@@ -1,11 +1,11 @@
 import React from 'react';
-import Game from './game';
+import Game from './Game';
 import initBox2D from "./Box2D/initBox2d";
-import './Interface.css';
-import Sprites from './Sprites';
-import StatsPanel from "./StatsPanel";
+import './App.css';
+import Sprites from './Sprites/Sprites';
+import StatsPanel from "./Stats/StatsPanel";
 
-export default class Interface extends React.Component {
+export default class App extends React.Component {
     state = {
         started: false,
         loading: false,

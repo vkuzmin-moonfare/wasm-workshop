@@ -3,7 +3,7 @@ import statsHeap from './stats-heap';
 import {mean} from 'simple-statistics';
 import keyMirror from 'keymirror';
 import {get} from 'lodash-es';
-import Time from './time';
+import Time from '../Time';
 
 const perf = {};
 const buffers = [];

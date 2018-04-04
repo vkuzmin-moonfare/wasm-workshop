@@ -1,11 +1,11 @@
 import box2DLoader from './Box2D/initBox2d';
 import DebugDraw from './Box2D/DebugDraw';
-import Time from './time';
-import Controls from './Controls';
+import Time from './Time';
+import Controls from './Controls/Controls';
 import uuid from 'uuid';
 import Paper from 'paper';
-import perf, {Measures} from './perf';
-import statsHeap from './stats-heap';
+import perf, {Measures} from './Stats/perf';
+import statsHeap from './Stats/stats-heap';
 
 let Box2D;
 const worldWidth = 16;
@@ -52,7 +52,7 @@ export default class Game {
         perf.markEvent(Measures.PhysicsFrameEvent);
         perf.usingMeasure(Measures.PhysicsFrameTime, () => {
             this.totalTime += elapsed;
-            this.playerMovement.applyDirection(elapsed);
+            this.playerControls.applyDirection(elapsed);
             this.tryCleanRocks();
             this.trySpawnBoulders();
             this.processCallbacks();
@@ -131,7 +131,7 @@ export default class Game {
         this.drawMap();
         this.player = this.addPlayer();
         this.registerObj(this.player);
-        this.playerMovement = new Controls(this.player, Box2D);
+        this.playerControls = new Controls(this.player, Box2D);
         const d = 0.5;
         this.offsetByDir = {
             U: new b2Vec2(0, -d),
@@ -328,7 +328,7 @@ export default class Game {
     tryShoot() {
         if (!this.lastShootTime)
             this.lastShootTime = 0;
-        let shootDirection = this.playerMovement.getShootDirection();
+        let shootDirection = this.playerControls.getShootDirection();
         let offsetByDir = this.offsetByDir[shootDirection];
         if ((this.totalTime - this.lastShootTime > 100) && offsetByDir) {
             const playerPos = this.player.GetPosition();

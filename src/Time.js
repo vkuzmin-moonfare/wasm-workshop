@@ -10,7 +10,7 @@ const startBreakableTimer = (callback, step) => {
     }, step);
 };
 
-export default class {
+class Time {
     constructor(timeStep) {
         this.timeStep = timeStep;
     }
@@ -54,4 +54,6 @@ export default class {
         };
         startBreakableTimer(timerWork, this.timeStep);
     }
-};
+}
+
+export default Time;
