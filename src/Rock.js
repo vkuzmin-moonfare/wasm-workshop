@@ -11,7 +11,7 @@ class Rock {
         const body = this.game.makeRectangleImpl(spawnPos.get_x() + (Math.random() - 0.5),
             spawnPos.get_y(), width, height, true);
         this.image = new Paper.Shape.Rectangle({
-            point: this.game.vec2Point(body.GetPosition()),
+            point: this.graphics.vec2Point(body.GetPosition()),
             size: new Paper.Size(width * this.scale, height * this.scale),
             strokeColor: 'brown',
             fillColor: 'brown',
@@ -23,7 +23,7 @@ class Rock {
     }
 
     updateImage() {
-        this.image.position = this.game.vec2Point(this.body.GetPosition());
+        this.image.position = this.graphics.vec2Point(this.body.GetPosition());
         const newAngleRad = this.body.GetTransform().get_q().GetAngle();
         const newAngleDeg = newAngleRad / Math.PI * 180;
         if (!this.image.oldRot)

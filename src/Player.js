@@ -81,7 +81,7 @@ class Player {
     }
 
     updateImage() {
-        this.image.position = this.game.vec2Point(this.body.GetPosition());
+        this.image.position = this.graphics.vec2Point(this.body.GetPosition());
         const newAngleRad = this.body.GetTransform().get_q().GetAngle();
         const newAngleDeg = newAngleRad / Math.PI * 180;
         if (!this.image.oldRot)

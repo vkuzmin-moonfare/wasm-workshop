@@ -1,14 +1,11 @@
 import box2DLoader from './Box2D/initBox2d';
-import DebugDraw from './Box2D/DebugDraw';
 import Time from './Time/Time';
 import uuid from 'uuid';
-import Paper from 'paper';
 import perf, {Measures} from './Stats/perf';
 import statsHeap from './Stats/stats-heap';
 import Player from "./Player";
 import Rock from "./Rock";
 import Graphics from './Graphics/Graphics';
-import {get} from 'lodash-es';
 
 let Box2D;
 
@@ -30,7 +27,6 @@ export default class Game {
         perf.markEvent(Measures.RenderFrameEvent);
         perf.usingMeasure(Measures.RenderFrameTime, () => {
             this.graphics.update(this.gameObjects);
-            this.debugDraw.update();
         });
     };
     updatePhysics = (elapsed) => {
@@ -75,32 +71,6 @@ export default class Game {
         window.game = this;
     }
 
-    vec2Point(vec) {
-        return new Paper.Point(vec.get_x() * this.scale, vec.get_y() * this.scale);
-    }
-
-    applyProportionateDimensions(canvas) {
-        // newW/newH = worldWidth/worldHeight
-
-        const oldWidth = canvas.clientWidth;
-        const oldHeight = canvas.clientHeight;
-        let newWidth, newHeight, scale;
-        const proportion = oldWidth / oldHeight;
-        let rightProportion = this.world.width / this.world.height;
-        if (proportion > rightProportion) { // landscape, fit height
-            scale = oldHeight / this.world.height;
-            newHeight = oldHeight;
-            newWidth = (rightProportion * newHeight).toFixed(0);
-        } else { // portrait, fit width
-            scale = oldWidth / this.world.width;
-            newWidth = oldWidth;
-            newHeight = (newWidth / rightProportion).toFixed(0);
-        }
-        this.scale = scale;
-        canvas.style.width = `${newWidth}px`;
-        canvas.style.height = `${newHeight}px`;
-    }
-
     async start() {
         perf.start();
 
@@ -115,11 +85,9 @@ export default class Game {
         this.gameObjects = {};
         this.callbacks = [];
         this.destroying = {};
-        // graphics
-        this.applyProportionateDimensions(this.debugCanvas);
-        this.applyProportionateDimensions(this.graphicsCanvas);
-        this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, this.world.width * this.scale, this.world.height * this.scale, this.scale);
-        this.graphics = new Graphics(this.graphicsCanvas, this);
+
+        // all graphics, normal and debug
+        this.graphics = new Graphics(this.graphicsCanvas, this, this.world, this.debugCanvas, Box2D);
 
         // objects
         this.initializeMap();
