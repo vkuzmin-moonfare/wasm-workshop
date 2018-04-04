@@ -33,3 +33,16 @@ body, html {
     flex-direction: row;
     align-items: flex-start;
 }
+
+.debugControls {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.debugControls button {
+    flex: 1;
+    width: 100%;
+}
+

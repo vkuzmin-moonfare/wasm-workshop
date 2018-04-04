@@ -2,12 +2,13 @@ import Paper from "paper";
 import DebugDraw from "../Box2D/DebugDraw";
 
 class Graphics {
-    constructor(graphicsCanvas, game, world, debugCanvas, Box2D) {
+    constructor(graphicsCanvas, game, world, debugCanvas, Box2D, showDebugView) {
         this.game = game;
         this.world = world;
         this.applyProportionateDimensions(graphicsCanvas);
         this.applyProportionateDimensions(debugCanvas);
         this.debugDraw = new DebugDraw(debugCanvas, this.world, Box2D, this.world.width * this.scale, this.world.height * this.scale, this.scale);
+        this.showDebugView = showDebugView;
         Paper.setup(graphicsCanvas);
         const background = new Paper.Path.Rectangle(Paper.view.bounds);
         background.fillColor = '#201F33';
@@ -16,6 +17,12 @@ class Graphics {
 
     vec2Point(vec) {
         return new Paper.Point(vec.get_x() * this.scale, vec.get_y() * this.scale);
+    }
+
+    toggleDebugView() {
+        this.showDebugView = !this.showDebugView;
+        if (!this.showDebugView)
+            this.debugDraw.clear();
     }
 
     applyProportionateDimensions(canvas) {
@@ -40,7 +47,8 @@ class Graphics {
     }
 
     update(objects) {
-        this.debugDraw.update();
+        if (this.showDebugView)
+            this.debugDraw.update();
         Object.values(objects).forEach(obj => {
             if (obj.updateImage)
                 obj.updateImage();

@@ -13,7 +13,7 @@ export default class App extends React.Component {
 
     start = async () => {
         this.setState({loading: true});
-        this.game = new Game(this.debugCanvas, this.graphicsCanvas);
+        this.game = new Game(this.debugCanvas, this.graphicsCanvas, false);
         await this.game.start();
         this.setState({started: true, loading: false});
     };
@@ -56,6 +56,10 @@ export default class App extends React.Component {
                     </div>}
                     {this.state.loading && <div>Loading...</div>}
                 </div>}
+            </div>
+            <div className="debugControls">
+                <button onClick={() => this.game.restart()}>Restart</button>
+                <button onClick={() => this.game.toggleDebugView()}>Toggle debugView</button>
             </div>
             <StatsPanel/>
         </div>

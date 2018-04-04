@@ -66,10 +66,15 @@ export default class Game {
         }
     };
 
-    constructor(debugCanvas, graphicsCanvas) {
+    constructor(debugCanvas, graphicsCanvas, showDebugView) {
         this.debugCanvas = debugCanvas;
         this.graphicsCanvas = graphicsCanvas;
+        this.showDebugView = showDebugView;
         window.game = this;
+    }
+
+    toggleDebugView () {
+        this.graphics.toggleDebugView();
     }
 
     async start() {
@@ -88,7 +93,7 @@ export default class Game {
         this.destroying = {};
 
         // all graphics, normal and debug
-        this.graphics = new Graphics(this.graphicsCanvas, this, this.world, this.debugCanvas, Box2D);
+        this.graphics = new Graphics(this.graphicsCanvas, this, this.world, this.debugCanvas, Box2D, this.showDebugView);
 
         // objects
         this.initializeMap();
@@ -100,6 +105,11 @@ export default class Game {
         this.time = new Time(timeStep);
         statsHeap.timeStep = timeStep;
         this.time.run(this.updatePhysics, this.updateGraphics);
+    }
+
+    async restart() {
+        this.time.stop();
+        await this.start();
     }
 
     initializeMap() {

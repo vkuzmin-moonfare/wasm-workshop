@@ -22,8 +22,12 @@ export default class DebugDraw {
     }
 
     update() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.clear();
         this.world.DrawDebugData();
+    }
+
+    clear() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 };
 

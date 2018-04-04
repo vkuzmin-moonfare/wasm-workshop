@@ -8,6 +8,7 @@ const startBreakableTimer = (callback, step) => {
             throw e;
         }
     }, step);
+    return timer;
 };
 
 class Time {
@@ -23,7 +24,7 @@ class Time {
 
         const clampTime = 200;
 
-        startBreakableTimer(() => {
+        this.timer1 = startBreakableTimer(() => {
             this.count = 0;
         }, clampTime);
 
@@ -52,7 +53,12 @@ class Time {
                 this.lock = false;
             }
         };
-        startBreakableTimer(timerWork, this.timeStep);
+        this.timer2 = startBreakableTimer(timerWork, this.timeStep);
+    }
+
+    stop() {
+        clearInterval(this.timer1);
+        clearInterval(this.timer2);
     }
 }
 
