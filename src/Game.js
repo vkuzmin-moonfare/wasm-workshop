@@ -1,12 +1,12 @@
 import box2DLoader from './Box2D/initBox2d';
 import DebugDraw from './Box2D/DebugDraw';
 import Time from './Time/Time';
-import Controls from './Controls/Controls';
 import uuid from 'uuid';
 import Paper from 'paper';
 import perf, {Measures} from './Stats/perf';
 import statsHeap from './Stats/stats-heap';
 import Player from "./Player";
+import Graphics from './Graphics/Graphics';
 
 let Box2D;
 
@@ -27,20 +27,7 @@ export default class Game {
     updateGraphics = () => {
         perf.markEvent(Measures.RenderFrameEvent);
         perf.usingMeasure(Measures.RenderFrameTime, () => {
-            Object.values(this.gameObjects).forEach(obj => {
-                if (obj.updateImage)
-                    obj.updateImage();
-                else if (obj.image) {
-                    obj.image.position = this.vec2Point(obj.GetPosition());
-                    const newAngleRad = obj.GetTransform().get_q().GetAngle();
-                    const newAngleDeg = newAngleRad / Math.PI * 180;
-                    if (!obj.image.oldRot)
-                        obj.image.oldRot = newAngleDeg;
-                    obj.image.rotate(newAngleDeg - obj.image.oldRot);
-                    obj.image.oldRot = newAngleDeg;
-                }
-            });
-            Paper.view.draw();
+            this.graphics.update(this.gameObjects);
             this.debugDraw.update();
         });
     };
@@ -111,6 +98,8 @@ export default class Game {
 
     async start() {
         perf.start();
+
+        // world (physics)
         Box2D = await box2DLoader();
         let { b2World, b2Vec2 } = Box2D;
         let gravity = new b2Vec2(0, 10);
@@ -118,30 +107,26 @@ export default class Game {
         this.world.width = 16;
         this.world.height = 9;
         this.setupContactListener();
-
-        this.applyProportionateDimensions(this.debugCanvas);
-        this.applyProportionateDimensions(this.graphicsCanvas);
-        this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, this.world.width * this.scale, this.world.height * this.scale, this.scale);
-        this.initPaperJs();
-
         this.gameObjects = {};
         this.callbacks = [];
         this.destroying = {};
+
+        // graphics
+        this.applyProportionateDimensions(this.debugCanvas);
+        this.applyProportionateDimensions(this.graphicsCanvas);
+        this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, this.world.width * this.scale, this.world.height * this.scale, this.scale);
+        this.graphics = new Graphics(this.graphicsCanvas, this);
+
+        // objects
         this.initializeMap();
-        this.player = new Player(Box2D, this.world, this, this);
+        this.player = new Player(Box2D, this.world, this.graphics, this);
+
+        // time
         this.totalTime = 0;
         let timeStep = 1000 / 30;
         this.time = new Time(timeStep);
         statsHeap.timeStep = timeStep;
-
         this.time.run(this.updatePhysics, this.updateGraphics);
-    }
-
-    initPaperJs() {
-        Paper.setup(this.graphicsCanvas);
-        const background = new Paper.Path.Rectangle(Paper.view.bounds);
-        background.fillColor = '#201F33';
-        background.sendToBack();
     }
 
     initializeMap() {
@@ -153,7 +138,7 @@ export default class Game {
                 if (mapSign === 'x') {
                     const floor = this.makeRectangleImpl(x, y, wallSize, wallSize, false);
                     this.registerObj(floor);
-                    floor.image = this.getSquareSprite('spelunky', 0, 32, 16, 64, 80, wallSize, floor.GetPosition());
+                    floor.image = this.graphics.getSquareSprite('spelunky', 0, 32, 16, 64, 80, wallSize, floor.GetPosition());
                 }
                 else if (mapSign === 's') {
                     const spawn = this.makeRectangleImpl(x, y, 0.1, 0.1, false);
@@ -183,29 +168,19 @@ export default class Game {
             this.destroying[id] = true;
             this.callbacks.push(() => {
                 const obj = this.gameObjects[id];
-                if (obj.image)
-                    obj.image.remove();
-                delete obj.image;
-                this.world.DestroyBody(obj);
+                if (obj.destroy)
+                    obj.destroy();
+                else {
+                    if (obj.image) {
+                        obj.image.remove();
+                        delete obj.image;
+                    }
+                    this.world.DestroyBody(obj);
+                }
                 delete this.gameObjects[id];
                 delete this.destroying[id];
             });
         }
-    }
-
-    getSquareSprite(name, xOffset, yOffset, xSize, totalX, totalY, physicalSize, physicalPos) {
-        const raster = new Paper.Raster(name);
-        const position = this.vec2Point(physicalPos);
-        const fitToSize = physicalSize * this.scale;
-        raster.position = new Paper.Point(position.x + (totalX / 2 - xOffset - xSize / 2), position.y + (totalY / 2 - yOffset - xSize / 2));
-        const path = new Paper.Shape.Rectangle({
-            position: position,
-            size: new Paper.Size(xSize, xSize),
-        });
-        const group = new Paper.Group([path, raster]);
-        group.scale(fitToSize / xSize);
-        group.clipped = true;
-        return group;
     }
 
     makeRectangleImpl(x, y, width, height, dynamic) {
@@ -252,7 +227,7 @@ export default class Game {
                 shift.op_mul(100);
                 boulder.ApplyForceToCenter(shift);
                 shift.__destroy__();
-                boulder.image = this.getSquareSprite('spelunky', 16, 48, 16, 64, 80, boulderSize, boulder.GetPosition());
+                boulder.image = this.graphics.getSquareSprite('spelunky', 16, 48, 16, 64, 80, boulderSize, boulder.GetPosition());
                 this.registerObj(boulder);
             });
             this.lastSpawnTime = this.totalTime;

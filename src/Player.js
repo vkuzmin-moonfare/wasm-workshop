@@ -4,45 +4,46 @@ let Box2D;
 class Player {
     constructor(b2D, world, graphics, game) {
         Box2D = b2D;
-        const { b2Vec2 } = Box2D;
         this.world = world;
         this.game = game;
+        this.graphics = graphics;
+
+        // body
         const width = 0.5;
         const height = 0.5;
-        const x = world.width / 2;
-        const y = world.height - 1;
+        const x = this.world.width / 2;
+        const y = this.world.height - 1;
         const bodyDef = new Box2D.b2BodyDef();
         bodyDef.set_type(Box2D.b2_dynamicBody);
         let center = new Box2D.b2Vec2(x, y);
         bodyDef.set_position(center);
-        const body = world.CreateBody(bodyDef);
-        bodyDef.__destroy__();
-        center.__destroy__();
+        const body = this.world.CreateBody(bodyDef);
         body.SetFixedRotation(true);
         const halfWidth = width / 2;
         const halfHeight = height / 2;
         let bodyShape = new Box2D.b2PolygonShape();
         bodyShape.SetAsBox(halfWidth, halfHeight);
         body.CreateFixture(bodyShape, 1);
-        this.image = graphics.getSquareSprite('spelunky', 0, 16, 16, 64, 80, 0.5, body.GetPosition());
-        this.graphics = graphics;
-        this.controls = new Controls(body, Box2D);
         this.body = body;
+        bodyDef.__destroy__();
+        center.__destroy__();
 
+        // graphics and controls
+        this.image = this.graphics.getSquareSprite('spelunky', 0, 16, 16, 64, 80, 0.5, body.GetPosition());
+        this.controls = new Controls(body, Box2D);
         const d = 0.5;
         this.offsetByDir = {
-            U: new b2Vec2(0, -d),
-            UR: new b2Vec2(d, -d),
-            R: new b2Vec2(d, 0),
-            DR: new b2Vec2(d, d),
-            D: new b2Vec2(0, d),
-            DL: new b2Vec2(-d, d),
-            L: new b2Vec2(-d, 0),
-            UL: new b2Vec2(-d, -d),
+            U: new Box2D.b2Vec2(0, -d),
+            UR: new Box2D.b2Vec2(d, -d),
+            R: new Box2D.b2Vec2(d, 0),
+            DR: new Box2D.b2Vec2(d, d),
+            D: new Box2D.b2Vec2(0, d),
+            DL: new Box2D.b2Vec2(-d, d),
+            L: new Box2D.b2Vec2(-d, 0),
+            UL: new Box2D.b2Vec2(-d, -d),
         };
 
-        game.registerObj(this);
-
+        this.game.registerObj(this);
     }
 
     updatePhysics(elapsed) {
@@ -78,13 +79,22 @@ class Player {
     }
 
     updateImage() {
-        this.image.position = this.graphics.vec2Point(this.body.GetPosition());
+        this.image.position = this.game.vec2Point(this.body.GetPosition());
         const newAngleRad = this.body.GetTransform().get_q().GetAngle();
         const newAngleDeg = newAngleRad / Math.PI * 180;
         if (!this.image.oldRot)
             this.image.oldRot = newAngleDeg;
         this.image.rotate(newAngleDeg - this.image.oldRot);
         this.image.oldRot = newAngleDeg;
+    }
+
+    destroy() {
+        this.image.remove();
+        this.world.DestroyBody(this.body);
+        this.image = null;
+        this.body = null;
+        this.conrols = null;
+        Object.values(this.offsetByDir).forEach(vec => vec.__destroy__());
     }
 }
 
