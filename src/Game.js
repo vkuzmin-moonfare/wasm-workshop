@@ -6,6 +6,7 @@ import statsHeap from './Stats/stats-heap';
 import Player from './Player';
 import Rock from './Rock';
 import Boulder from './Boulder';
+import Spawn from './Spawn';
 import Graphics from './Graphics/Graphics';
 
 let Box2D;
@@ -119,14 +120,13 @@ export default class Game {
                 let x = wallSize * j + wallSize / 2;
                 let y = wallSize * i + wallSize / 2;
                 if (mapSign === 'x') {
-                    const floor = this.makeRectangleImpl(x, y, wallSize, wallSize, false);
-                    this.registerObj(floor);
-                    floor.image = this.graphics.getSquareSprite('spelunky', 0, 32, 16, 64, 80, wallSize, floor.GetPosition());
+                    const body = this.makeRectangleImpl(x, y, wallSize, wallSize, false);
+                    body.type = 'wall';
+                    this.registerObj(body);
+                    body.image = this.graphics.getSquareSprite('spelunky', 0, 32, 16, 64, 80, wallSize, body.GetPosition());
                 }
                 else if (mapSign === 's') {
-                    const spawn = this.makeRectangleImpl(x, y, 0.1, 0.1, false);
-                    spawn.type = 'spawn';
-                    this.registerObj(spawn);
+                    new Spawn(this, this.world, this.graphics, x, y);
                 }
             }
         }

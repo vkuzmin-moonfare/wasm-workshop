@@ -1,6 +1,6 @@
 class Boulder {
     constructor(game, spawn, world, Box2D, graphics) {
-        const spawnPos = spawn.GetWorldCenter();
+        const spawnPos = spawn.body.GetWorldCenter();
         let boulderSize = 0.5;
         let shift = new Box2D.b2Vec2(world.width / 2 - spawnPos.get_x(), world.height / 2 - spawnPos.get_y());
         shift.Normalize();
