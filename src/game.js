@@ -1,7 +1,7 @@
-import box2DLoader from './box2d';
-import DebugDraw from './DebugDraw';
+import box2DLoader from './Box2D/initBox2d';
+import DebugDraw from './Box2D/DebugDraw';
 import Time from './time';
-import Movement from './controls';
+import Controls from './Controls';
 import uuid from 'uuid';
 import Paper from 'paper';
 import perf, {Measures} from './perf';
@@ -131,7 +131,7 @@ export default class Game {
         this.drawMap();
         this.player = this.addPlayer();
         this.registerObj(this.player);
-        this.playerMovement = new Movement(this.player, Box2D);
+        this.playerMovement = new Controls(this.player, Box2D);
         const d = 0.5;
         this.offsetByDir = {
             U: new b2Vec2(0, -d),

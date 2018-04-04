@@ -1,6 +1,6 @@
 import React from 'react';
 import Game from './game';
-import initBox2D from "./box2d";
+import initBox2D from "./Box2D/initBox2d";
 import './Interface.css';
 import Sprites from './Sprites';
 import StatsPanel from "./StatsPanel";
