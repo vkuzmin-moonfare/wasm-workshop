@@ -98,11 +98,11 @@ export default class Game {
         if (proportion > rightProportion) { // landscape, fit height
             scale = oldHeight / worldHeight;
             newHeight = oldHeight;
-            newWidth = (rightProportion * newHeight).toFixed(0) - 100;
+            newWidth = (rightProportion * newHeight).toFixed(0);
         } else { // portrait, fit width
             scale = oldWidth / worldWidth;
             newWidth = oldWidth;
-            newHeight = (newWidth / rightProportion).toFixed(0) - 100;
+            newHeight = (newWidth / rightProportion).toFixed(0);
         }
         window.scale = scale;
         this.debugCanvas.style.width = `${newWidth}px`;
