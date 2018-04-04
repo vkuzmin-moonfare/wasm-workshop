@@ -8,14 +8,14 @@ const e_jointBit = 0x0002;
 // const e_centerOfMassBit = 0x0010;
 
 export default class DebugDraw {
-    constructor(canvas, world, Box2D, width, height) {
+    constructor(canvas, world, Box2D, width, height, scale) {
         this.world = world;
         this.canvas = canvas;
         this.canvas.width = width;
         this.canvas.height = height;
         this.context = this.canvas.getContext('2d'); // ugly hack for ugly code
         const helpers = helpersFactory(Box2D);
-        const emboxDebugDraw = debugDrawFactory(Box2D, this.context, helpers, (l) => l * window.scale);
+        const emboxDebugDraw = debugDrawFactory(Box2D, this.context, helpers, (l) => l * scale);
         const debugDraw = emboxDebugDraw.getCanvasDebugDraw();
         debugDraw.SetFlags(e_shapeBit | e_jointBit);
         this.world.SetDebugDraw(debugDraw);

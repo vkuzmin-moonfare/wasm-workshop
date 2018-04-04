@@ -22,8 +22,8 @@ export default class App extends React.Component {
         console.time('load');
         try {
             const Box2D = await initBox2D();
-            const Vec2 = Box2D.b2Vec2;
-            new Vec2(0, 0);
+            const vec = new Box2D.b2Vec2(0, 0);
+            vec.__destroy__();
             console.log('success!');
         } catch (e) {
             console.error(e);

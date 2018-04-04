@@ -24,17 +24,17 @@ const map = [
     ['x', 'x', 's', 'x', 'x', 's', 'x', 'x', 's', 'x', 's', 'x', 'x', 's', 'x', 'x',],
 ];
 
-const vec2Point = (vec) => {
-    return new Paper.Point(vec.get_x() * window.scale, vec.get_y() * window.scale);
-};
-
 export default class Game {
+    vec2Point(vec) {
+        return new Paper.Point(vec.get_x() * this.scale, vec.get_y() * this.scale);
+    }
+
     updateGraphics = () => {
         perf.markEvent(Measures.RenderFrameEvent);
         perf.usingMeasure(Measures.RenderFrameTime, () => {
             Object.values(this.gameObjects).forEach(obj => {
                 if (obj.image) {
-                    obj.image.position = vec2Point(obj.GetPosition());
+                    obj.image.position = this.vec2Point(obj.GetPosition());
                     const newAngleRad = obj.GetTransform().get_q().GetAngle();
                     const newAngleDeg = newAngleRad / Math.PI * 180;
                     if (!obj.image.oldRot)
@@ -104,7 +104,7 @@ export default class Game {
             newWidth = oldWidth;
             newHeight = (newWidth / rightProportion).toFixed(0);
         }
-        window.scale = scale;
+        this.scale = scale;
         this.debugCanvas.style.width = `${newWidth}px`;
         this.debugCanvas.style.height = `${newHeight}px`;
         this.graphicsCanvas.style.width = `${newWidth}px`;
@@ -120,7 +120,7 @@ export default class Game {
         this.setupContactListener();
         this.totalTime = 0;
         this.applyProportionateDimensions();
-        this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, worldWidth * window.scale, worldHeight * window.scale);
+        this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, worldWidth * this.scale, worldHeight * this.scale, this.scale);
         this.initPaperJs();
         let timeStep = 1000 / 30;
         this.time = new Time(timeStep);
@@ -228,8 +228,8 @@ export default class Game {
 
     getSquareSprite(name, xOffset, yOffset, xSize, totalX, totalY, physicalSize, physicalPos) {
         const raster = new Paper.Raster(name);
-        const position = vec2Point(physicalPos);
-        const fitToSize = physicalSize * window.scale;
+        const position = this.vec2Point(physicalPos);
+        const fitToSize = physicalSize * this.scale;
         raster.position = new Paper.Point(position.x + (totalX / 2 - xOffset - xSize / 2), position.y + (totalY / 2 - yOffset - xSize / 2));
         const path = new Paper.Shape.Rectangle({
             position: position,
@@ -303,8 +303,8 @@ export default class Game {
                     spawnPos.get_y(), width, height, true);
                 rock.type = 'rock';
                 rock.image = new Paper.Shape.Rectangle({
-                    point: vec2Point(rock.GetPosition()),
-                    size: new Paper.Size(width * window.scale, height * window.scale),
+                    point: this.vec2Point(rock.GetPosition()),
+                    size: new Paper.Size(width * this.scale, height * this.scale),
                 });
                 rock.image.fillColor = 'brown';
                 rock.image.strokeColor = 'brown';
@@ -350,10 +350,6 @@ export default class Game {
             impulseVec.__destroy__();
             this.lastShootTime = this.totalTime;
         }
-    }
-
-    getAngle(v1, v2) {
-        return Math.atan2(v1.x * v2.y - v1.y * v2.x, v1.x * v2.x + v1.y * v2.y);
     }
 
     setupContactListener() {
