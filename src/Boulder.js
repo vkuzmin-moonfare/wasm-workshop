@@ -1,9 +1,11 @@
 import Rock from "./Rock";
 
+let Box2D;
 class Boulder {
-    constructor(game, spawn, world, Box2D, graphics) {
+    constructor(game, spawn, world, b2d, graphics) {
         const spawnPos = spawn.body.GetWorldCenter();
         let boulderSize = 0.5;
+        Box2D = b2d;
         let shift = new Box2D.b2Vec2(world.width / 2 - spawnPos.get_x(), world.height / 2 - spawnPos.get_y());
         shift.Normalize();
         shift.op_mul(boulderSize);
@@ -39,7 +41,7 @@ class Boulder {
         this.body = null;
     }
 
-    break() {
+    break(accelerateRocks) {
         const spawnPos = this.body.GetPosition();
         this.game.unregisterObj(this);
         let game = this.game;
@@ -47,7 +49,7 @@ class Boulder {
         let graphics = this.graphics;
         this.game.callbacks.push(() => {
             for (let i = 0; i < 3; ++i) {
-                new Rock(graphics, world, game, spawnPos);
+                new Rock(graphics, world, game, spawnPos, Box2D, accelerateRocks);
             }
         })
     }

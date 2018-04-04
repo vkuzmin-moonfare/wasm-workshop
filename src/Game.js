@@ -53,7 +53,7 @@ export default class Game {
             if (objB.type !== 'pickaxe' && objB.type !== 'player')
                 this.unregisterObj(objA);
             if (objB.type === 'boulder')
-                objB.break();
+                objB.break(true);
             if (objB.type === 'rock')
                 this.unregisterObj(objB);
         }
@@ -61,7 +61,7 @@ export default class Game {
             if (objA.type !== 'pickaxe' && objA.type !== 'player')
                 this.unregisterObj(objB);
             if (objA.type === 'boulder')
-                objA.break();
+                objA.break(true);
             if (objA.type === 'rock')
                 this.unregisterObj(objA);
         }
