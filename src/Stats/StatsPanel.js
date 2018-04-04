@@ -9,14 +9,8 @@ const formatNumber = (x) => {
 };
 
 let StatsPanel = () => {
-  // eslint-disable-next-line no-mixed-operators
-  const emccHeapMB = 0; // window.Box2D.HEAP8.length * 8 / 1024 / 1024;
   return (<div className="stats">
     <div className="header">Debug info:</div>
-    <div className="row">
-      <span className="name">EMCC Heap:</span>
-      <span className="value">{formatNumber(emccHeapMB)}MB</span>
-    </div>
     <div className="row">
       <span className="name">Time step:</span>
       <span className="value">{formatNumber(statsHeap.timeStep)}ms</span>

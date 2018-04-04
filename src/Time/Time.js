@@ -15,7 +15,7 @@ class Time {
         this.timeStep = timeStep;
     }
 
-    setInterval(physics, render) {
+    run(physics, render) {
         let lastCheck = performance.now();
         this.accumulator = 0;
         this.lock = false;

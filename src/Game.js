@@ -1,15 +1,14 @@
 import box2DLoader from './Box2D/initBox2d';
 import DebugDraw from './Box2D/DebugDraw';
-import Time from './Time';
+import Time from './Time/Time';
 import Controls from './Controls/Controls';
 import uuid from 'uuid';
 import Paper from 'paper';
 import perf, {Measures} from './Stats/perf';
 import statsHeap from './Stats/stats-heap';
+import Player from "./Player";
 
 let Box2D;
-const worldWidth = 16;
-const worldHeight = 9;
 
 const wallSize = 1;
 const map = [
@@ -25,15 +24,13 @@ const map = [
 ];
 
 export default class Game {
-    vec2Point(vec) {
-        return new Paper.Point(vec.get_x() * this.scale, vec.get_y() * this.scale);
-    }
-
     updateGraphics = () => {
         perf.markEvent(Measures.RenderFrameEvent);
         perf.usingMeasure(Measures.RenderFrameTime, () => {
             Object.values(this.gameObjects).forEach(obj => {
-                if (obj.image) {
+                if (obj.updateImage)
+                    obj.updateImage();
+                else if (obj.image) {
                     obj.image.position = this.vec2Point(obj.GetPosition());
                     const newAngleRad = obj.GetTransform().get_q().GetAngle();
                     const newAngleDeg = newAngleRad / Math.PI * 180;
@@ -47,16 +44,14 @@ export default class Game {
             this.debugDraw.update();
         });
     };
-
     updatePhysics = (elapsed) => {
         perf.markEvent(Measures.PhysicsFrameEvent);
         perf.usingMeasure(Measures.PhysicsFrameTime, () => {
             this.totalTime += elapsed;
-            this.playerControls.applyDirection(elapsed);
+            this.player.updatePhysics(elapsed);
             this.tryCleanRocks();
             this.trySpawnBoulders();
             this.processCallbacks();
-            this.tryShoot();
             this.world.Step(elapsed / 1000, 10, 10);
             this.world.ClearForces();
         });
@@ -88,62 +83,58 @@ export default class Game {
         this.graphicsCanvas = graphicsCanvas;
     }
 
-    applyProportionateDimensions() {
-        const oldWidth = this.debugCanvas.clientWidth;
-        const oldHeight = this.debugCanvas.clientHeight;
+    vec2Point(vec) {
+        return new Paper.Point(vec.get_x() * this.scale, vec.get_y() * this.scale);
+    }
+
+    applyProportionateDimensions(canvas) {
+        // newW/newH = worldWidth/worldHeight
+
+        const oldWidth = canvas.clientWidth;
+        const oldHeight = canvas.clientHeight;
         let newWidth, newHeight, scale;
         const proportion = oldWidth / oldHeight;
-        let rightProportion = worldWidth / worldHeight;
-        // newW/newH = worldWidth/WorldHeight
+        let rightProportion = this.world.width / this.world.height;
         if (proportion > rightProportion) { // landscape, fit height
-            scale = oldHeight / worldHeight;
+            scale = oldHeight / this.world.height;
             newHeight = oldHeight;
             newWidth = (rightProportion * newHeight).toFixed(0);
         } else { // portrait, fit width
-            scale = oldWidth / worldWidth;
+            scale = oldWidth / this.world.width;
             newWidth = oldWidth;
             newHeight = (newWidth / rightProportion).toFixed(0);
         }
         this.scale = scale;
-        this.debugCanvas.style.width = `${newWidth}px`;
-        this.debugCanvas.style.height = `${newHeight}px`;
-        this.graphicsCanvas.style.width = `${newWidth}px`;
-        this.graphicsCanvas.style.height = `${newHeight}px`;
+        canvas.style.width = `${newWidth}px`;
+        canvas.style.height = `${newHeight}px`;
     }
 
     async start() {
         perf.start();
         Box2D = await box2DLoader();
         let { b2World, b2Vec2 } = Box2D;
-        this.world = new b2World(new b2Vec2(0, 10));
-        this.world.game = this;
+        let gravity = new b2Vec2(0, 10);
+        this.world = new b2World(gravity);
+        this.world.width = 16;
+        this.world.height = 9;
         this.setupContactListener();
-        this.totalTime = 0;
-        this.applyProportionateDimensions();
-        this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, worldWidth * this.scale, worldHeight * this.scale, this.scale);
+
+        this.applyProportionateDimensions(this.debugCanvas);
+        this.applyProportionateDimensions(this.graphicsCanvas);
+        this.debugDraw = new DebugDraw(this.debugCanvas, this.world, Box2D, this.world.width * this.scale, this.world.height * this.scale, this.scale);
         this.initPaperJs();
-        let timeStep = 1000 / 30;
-        this.time = new Time(timeStep);
-        statsHeap.timeStep = timeStep;
+
         this.gameObjects = {};
         this.callbacks = [];
         this.destroying = {};
-        this.drawMap();
-        this.player = this.addPlayer();
-        this.registerObj(this.player);
-        this.playerControls = new Controls(this.player, Box2D);
-        const d = 0.5;
-        this.offsetByDir = {
-            U: new b2Vec2(0, -d),
-            UR: new b2Vec2(d, -d),
-            R: new b2Vec2(d, 0),
-            DR: new b2Vec2(d, d),
-            D: new b2Vec2(0, d),
-            DL: new b2Vec2(-d, d),
-            L: new b2Vec2(-d, 0),
-            UL: new b2Vec2(-d, -d),
-        };
-        this.time.setInterval(this.updatePhysics, this.updateGraphics);
+        this.initializeMap();
+        this.player = new Player(Box2D, this.world, this, this);
+        this.totalTime = 0;
+        let timeStep = 1000 / 30;
+        this.time = new Time(timeStep);
+        statsHeap.timeStep = timeStep;
+
+        this.time.run(this.updatePhysics, this.updateGraphics);
     }
 
     initPaperJs() {
@@ -153,7 +144,7 @@ export default class Game {
         background.sendToBack();
     }
 
-    drawMap() {
+    initializeMap() {
         for (let i = 0; i < map.length; ++i) {
             for (let j = 0; j < map[i].length; ++j) {
                 let mapSign = map[i][j];
@@ -200,30 +191,6 @@ export default class Game {
                 delete this.destroying[id];
             });
         }
-
-    }
-
-    addPlayer() {
-        const width = 0.5;
-        const height = 0.5;
-        const x = worldWidth / 2;
-        const y = worldHeight - 1;
-        const bodyDef = new Box2D.b2BodyDef();
-        bodyDef.set_type(Box2D.b2_dynamicBody);
-        let center = new Box2D.b2Vec2(x, y);
-        bodyDef.set_position(center);
-        const body = this.world.CreateBody(bodyDef);
-        bodyDef.__destroy__();
-        center.__destroy__();
-        body.SetFixedRotation(true);
-        const halfWidth = width / 2;
-        const halfHeight = height / 2;
-        let bodyShape = new Box2D.b2PolygonShape();
-        bodyShape.SetAsBox(halfWidth, halfHeight);
-        body.CreateFixture(bodyShape, 1);
-        // graphics
-        body.image = this.getSquareSprite('spelunky', 0, 16, 16, 64, 80, 0.5, body.GetPosition());
-        return body;
     }
 
     getSquareSprite(name, xOffset, yOffset, xSize, totalX, totalY, physicalSize, physicalPos) {
@@ -276,7 +243,7 @@ export default class Game {
             Object.values(this.gameObjects).filter(o => o.type === 'spawn').forEach(sp => {
                 const spawnPos = sp.GetWorldCenter();
                 let boulderSize = 0.5;
-                let shift = new Box2D.b2Vec2(worldWidth/2 - spawnPos.get_x(), worldHeight /2 - spawnPos.get_y());
+                let shift = new Box2D.b2Vec2(this.world.width / 2 - spawnPos.get_x(), this.world.height / 2 - spawnPos.get_y());
                 shift.Normalize();
                 shift.op_mul(boulderSize);
                 const boulder = this.makeRectangleImpl(spawnPos.get_x() + shift.get_x(), spawnPos.get_y() + shift.get_y(), boulderSize, boulderSize, true);
@@ -322,33 +289,6 @@ export default class Game {
             let counter = 0;
             existingRocks.forEach(r => counter++ < spawns.length * 3 ? this.unregisterObj(r) : null);
             this.lastCleanTime = this.totalTime;
-        }
-    }
-
-    tryShoot() {
-        if (!this.lastShootTime)
-            this.lastShootTime = 0;
-        let shootDirection = this.playerControls.getShootDirection();
-        let offsetByDir = this.offsetByDir[shootDirection];
-        if ((this.totalTime - this.lastShootTime > 100) && offsetByDir) {
-            const playerPos = this.player.GetPosition();
-            let offsetX = offsetByDir.get_x();
-            let x = playerPos.get_x() + offsetX;
-            let offsetY = offsetByDir.get_y();
-            let y = playerPos.get_y() + offsetY;
-            const bulletSize = 0.3;
-            const bullet = this.makeRectangleImpl(x, y, bulletSize, bulletSize, true);
-            bullet.type = 'bullet';
-            bullet.SetBullet(true);
-            bullet.image = this.getSquareSprite('pickaxe', 0, 0, 75, 75, 75, bulletSize, bullet.GetPosition());
-            bullet.SetGravityScale(0.5);
-            this.registerObj(bullet);
-            const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
-            impulseVec.op_mul(50);
-            bullet.ApplyForceToCenter(impulseVec);
-            bullet.SetAngularVelocity(8);
-            impulseVec.__destroy__();
-            this.lastShootTime = this.totalTime;
         }
     }
 

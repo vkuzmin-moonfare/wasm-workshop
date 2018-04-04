@@ -3,7 +3,7 @@ import statsHeap from './stats-heap';
 import {mean} from 'simple-statistics';
 import keyMirror from 'keymirror';
 import {get} from 'lodash-es';
-import Time from '../Time';
+import Time from '../Time/Time';
 
 const perf = {};
 const buffers = [];
@@ -31,7 +31,7 @@ const flushInterval = 1000;
 
 perf.start = () => {
     const time = new Time(flushInterval);
-    time.setInterval(perf.flushBuffer, () => {
+    time.run(perf.flushBuffer, () => {
     });
     requestAnimationFrame(perf.startRealFPSMeter);
 };
