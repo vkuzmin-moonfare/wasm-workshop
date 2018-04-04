@@ -3,8 +3,9 @@ import Time from './Time/Time';
 import uuid from 'uuid';
 import perf, {Measures} from './Stats/perf';
 import statsHeap from './Stats/stats-heap';
-import Player from "./Player";
-import Rock from "./Rock";
+import Player from './Player';
+import Rock from './Rock';
+import Boulder from './Boulder';
 import Graphics from './Graphics/Graphics';
 
 let Box2D;
@@ -189,27 +190,15 @@ export default class Game {
                 existingBoulders.forEach(b => counter++ < spawns.length ? this.breakBoulder(b) : null);
             }
             Object.values(this.gameObjects).filter(o => o.type === 'spawn').forEach(sp => {
-                const spawnPos = sp.GetWorldCenter();
-                let boulderSize = 0.5;
-                let shift = new Box2D.b2Vec2(this.world.width / 2 - spawnPos.get_x(), this.world.height / 2 - spawnPos.get_y());
-                shift.Normalize();
-                shift.op_mul(boulderSize);
-                const boulder = this.makeRectangleImpl(spawnPos.get_x() + shift.get_x(), spawnPos.get_y() + shift.get_y(), boulderSize, boulderSize, true);
-                boulder.type = 'boulder';
-                shift.Normalize();
-                shift.op_mul(100);
-                boulder.ApplyForceToCenter(shift);
-                shift.__destroy__();
-                boulder.image = this.graphics.getSquareSprite('spelunky', 16, 48, 16, 64, 80, boulderSize, boulder.GetPosition());
-                this.registerObj(boulder);
+                new Boulder(this, sp, this.world, Box2D, this.graphics);
             });
             this.lastSpawnTime = this.totalTime;
         }
     }
 
-    breakBoulder(body) {
-        const spawnPos = body.GetPosition();
-        this.unregisterObj(body);
+    breakBoulder(boulder) {
+        const spawnPos = boulder.body.GetPosition();
+        this.unregisterObj(boulder);
         this.callbacks.push(() => {
             for (let i = 0; i < 3; ++i) {
                 new Rock(this.graphics, this.world, this, spawnPos);
