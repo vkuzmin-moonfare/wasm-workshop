@@ -10,7 +10,7 @@ class Boulder {
         shift.Normalize();
         shift.op_mul(boulderSize);
         // TODO 3.2 воспольуйтесь только что сделанным флагом dynamic
-        this.body = game.makeRectangleBody(spawnPos.get_x() + shift.get_x(), spawnPos.get_y() + shift.get_y(), boulderSize, boulderSize, true);
+        this.body = game.makeRectangleBody(spawnPos.get_x() + shift.get_x(), spawnPos.get_y() + shift.get_y(), boulderSize, boulderSize);
         this.type = 'boulder';
         this.body.gameObject = this;
         this.game = game;

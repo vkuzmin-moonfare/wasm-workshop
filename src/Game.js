@@ -196,9 +196,6 @@ export default class Game {
         const pos = new Box2D.b2Vec2(x, y);
         bodyDef.set_position(pos);
 
-        if (dynamic)
-            bodyDef.set_type(Box2D.b2_dynamicBody);
-
         const body = this.world.CreateBody(bodyDef);
         const shape = new Box2D.b2PolygonShape();
         shape.SetAsBox(width / 2, height / 2);
