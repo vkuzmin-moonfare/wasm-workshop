@@ -8,6 +8,7 @@ import statsHeap from './Stats/stats-heap';
 import Player from "./Player";
 import Rock from "./Rock";
 import Graphics from './Graphics/Graphics';
+import {get} from 'lodash-es';
 
 let Box2D;
 
@@ -46,29 +47,32 @@ export default class Game {
     };
     onContact = (contactPtr) => {
         const contact = Box2D.wrapPointer(contactPtr, Box2D.b2Contact);
-        const bodyA = contact.GetFixtureA().GetBody();
-        const bodyB = contact.GetFixtureB().GetBody();
-        if (bodyA.type === 'bullet') {
-            if (bodyB.type !== 'bullet' && bodyB.type !== 'player')
-                this.unregisterObj(bodyA);
-            if (bodyB.type === 'boulder')
-                this.breakBoulder(bodyB);
-            if (bodyB.type === 'rock')
-                this.unregisterObj(bodyB);
+        let bodyA = contact.GetFixtureA().GetBody();
+        let bodyB = contact.GetFixtureB().GetBody();
+        const objA = bodyA.gameObject || bodyA;
+        const objB = bodyB.gameObject || bodyB;
+        if (objA.type === 'pickaxe') {
+            if (objB.type !== 'pickaxe' && objB.type !== 'player')
+                this.unregisterObj(objA);
+            if (objB.type === 'boulder')
+                this.breakBoulder(objB);
+            if (objB.type === 'rock')
+                this.unregisterObj(objB);
         }
-        if (bodyB.type === 'bullet') {
-            if (bodyA.type !== 'bullet' && bodyA.type !== 'player')
-                this.unregisterObj(bodyB);
-            if (bodyA.type === 'boulder')
-                this.breakBoulder(bodyA);
-            if (bodyA.type === 'rock')
-                this.unregisterObj(bodyA);
+        if (objB.type === 'pickaxe') {
+            if (objA.type !== 'pickaxe' && objA.type !== 'player')
+                this.unregisterObj(objB);
+            if (objA.type === 'boulder')
+                this.breakBoulder(objA);
+            if (objA.type === 'rock')
+                this.unregisterObj(objA);
         }
     };
 
     constructor(debugCanvas, graphicsCanvas) {
         this.debugCanvas = debugCanvas;
         this.graphicsCanvas = graphicsCanvas;
+        window.game = this;
     }
 
     vec2Point(vec) {
@@ -111,7 +115,6 @@ export default class Game {
         this.gameObjects = {};
         this.callbacks = [];
         this.destroying = {};
-
         // graphics
         this.applyProportionateDimensions(this.debugCanvas);
         this.applyProportionateDimensions(this.graphicsCanvas);
@@ -165,23 +168,24 @@ export default class Game {
         else
             throw new Error(`Bad unregister id ${objOrId}`);
 
-        if (!this.destroying[id]) {
-            this.destroying[id] = true;
-            this.callbacks.push(() => {
-                const obj = this.gameObjects[id];
-                if (obj.destroy)
-                    obj.destroy();
-                else {
-                    if (obj.image) {
-                        obj.image.remove();
-                        delete obj.image;
-                    }
-                    this.world.DestroyBody(obj);
+        if (this.destroying[id])
+            return;
+        this.callbacks.push(() => {
+            const obj = this.gameObjects[id];
+            if (!obj) // already destroyed
+                return;
+            if (obj.destructor)
+                obj.destructor();
+            else {
+                if (obj.image) {
+                    obj.image.remove();
+                    delete obj.image;
                 }
-                delete this.gameObjects[id];
-                delete this.destroying[id];
-            });
-        }
+                this.world.DestroyBody(obj);
+            }
+            delete this.gameObjects[id];
+            delete this.destroying[id];
+        });
     }
 
     makeRectangleImpl(x, y, width, height, dynamic) {

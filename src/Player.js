@@ -25,8 +25,10 @@ class Player {
         bodyShape.SetAsBox(halfWidth, halfHeight);
         body.CreateFixture(bodyShape, 1);
         this.body = body;
+        this.body.gameObject = this;
         bodyDef.__destroy__();
         center.__destroy__();
+        this.type = 'player';
 
         // graphics and controls
         this.image = this.graphics.getSquareSprite('spelunky', 0, 16, 16, 64, 80, 0.5, body.GetPosition());
@@ -62,17 +64,17 @@ class Player {
             let x = playerPos.get_x() + offsetX;
             let offsetY = offsetByDir.get_y();
             let y = playerPos.get_y() + offsetY;
-            const bulletSize = 0.3;
-            const bullet = this.game.makeRectangleImpl(x, y, bulletSize, bulletSize, true);
-            bullet.type = 'bullet';
-            bullet.SetBullet(true);
-            bullet.image = this.graphics.getSquareSprite('pickaxe', 0, 0, 75, 75, 75, bulletSize, bullet.GetPosition());
-            bullet.SetGravityScale(0.5);
-            this.game.registerObj(bullet);
+            const pickaxeSize = 0.3;
+            const body = this.game.makeRectangleImpl(x, y, pickaxeSize, pickaxeSize, true);
+            body.type = 'pickaxe';
+            body.SetBullet(true);
+            body.image = this.graphics.getSquareSprite('pickaxe', 0, 0, 75, 75, 75, pickaxeSize, body.GetPosition());
+            body.SetGravityScale(0.5);
+            this.game.registerObj(body);
             const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
             impulseVec.op_mul(50);
-            bullet.ApplyForceToCenter(impulseVec);
-            bullet.SetAngularVelocity(8);
+            body.ApplyForceToCenter(impulseVec);
+            body.SetAngularVelocity(8);
             impulseVec.__destroy__();
             this.lastShootTime = this.game.totalTime;
         }
@@ -88,10 +90,11 @@ class Player {
         this.image.oldRot = newAngleDeg;
     }
 
-    destroy() {
+    destructor() {
         this.image.remove();
         this.world.DestroyBody(this.body);
         this.image = null;
+        this.body.gameObject = null;
         this.body = null;
         this.conrols = null;
         Object.values(this.offsetByDir).forEach(vec => vec.__destroy__());
