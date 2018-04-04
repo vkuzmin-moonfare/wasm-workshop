@@ -63,24 +63,24 @@ class Player {
             // Координаты получаются функциями get_x / get_y, т.к. позиция тела игрока и offsetByDir - вектора b2Vec2
             // Примените силу в 50 ньютонов к центру тела объекта по направлению offsetByDir
             // не забудьте почистить все использованные временные вектора!
-            const playerPos = this.body.GetPosition();
-            let offsetX = offsetByDir.get_x();
-            let x = playerPos.get_x() + offsetX;
-            let offsetY = offsetByDir.get_y();
-            let y = playerPos.get_y() + offsetY;
-            const pickaxeSize = 0.3;
-            const body = this.game.makeRectangleBody(x, y, pickaxeSize, pickaxeSize, true);
-            body.type = 'pickaxe';
-            body.SetBullet(true);
-            body.image = this.graphics.getImageFromSprite('pickaxe', 0, 0, 75, 75, 75, pickaxeSize, body.GetPosition());
-            body.SetGravityScale(0.5);
-            this.game.registerObj(body);
-            const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
-            impulseVec.op_mul(50);
-            body.ApplyForceToCenter(impulseVec);
-            body.SetAngularVelocity(8);
-            impulseVec.__destroy__();
-            this.lastShootTime = this.game.totalTime;
+            // const playerPos = this.body.GetPosition();
+            // let offsetX = offsetByDir.get_x();
+            // let x = playerPos.get_x() + offsetX;
+            // let offsetY = offsetByDir.get_y();
+            // let y = playerPos.get_y() + offsetY;
+            // const pickaxeSize = 0.3;
+            // const body = this.game.makeRectangleBody(x, y, pickaxeSize, pickaxeSize, true);
+            // body.type = 'pickaxe';
+            // body.SetBullet(true);
+            // body.image = this.graphics.getImageFromSprite('pickaxe', 0, 0, 75, 75, 75, pickaxeSize, body.GetPosition());
+            // body.SetGravityScale(0.5);
+            // this.game.registerObj(body);
+            // const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
+            // impulseVec.op_mul(50);
+            // body.ApplyForceToCenter(impulseVec);
+            // body.SetAngularVelocity(8);
+            // impulseVec.__destroy__();
+            // this.lastShootTime = this.game.totalTime;
         }
     }
 
