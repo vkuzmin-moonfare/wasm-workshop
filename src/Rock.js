@@ -12,10 +12,10 @@ class Rock {
             spawnPos.get_y(), width, height, true);
         this.image = new Paper.Shape.Rectangle({
             point: this.graphics.vec2Point(body.GetPosition()),
-            size: new Paper.Size(width * this.scale, height * this.scale),
-            strokeColor: 'brown',
-            fillColor: 'brown',
+            size: new Paper.Size(width * this.graphics.scale, height * this.graphics.scale),
         });
+        this.image.strokeColor = '#733e39';
+        this.image.fillColor = '#733e39';
         this.body = body;
         this.body.gameObject = this;
         this.type = 'rock';

@@ -53,7 +53,7 @@ export default class Game {
             if (objB.type !== 'pickaxe' && objB.type !== 'player')
                 this.unregisterObj(objA);
             if (objB.type === 'boulder')
-                this.breakBoulder(objB);
+                objB.break();
             if (objB.type === 'rock')
                 this.unregisterObj(objB);
         }
@@ -61,7 +61,7 @@ export default class Game {
             if (objA.type !== 'pickaxe' && objA.type !== 'player')
                 this.unregisterObj(objB);
             if (objA.type === 'boulder')
-                this.breakBoulder(objA);
+                objA.break();
             if (objA.type === 'rock')
                 this.unregisterObj(objA);
         }
@@ -197,23 +197,13 @@ export default class Game {
         if ((this.totalTime - this.lastSpawnTime > 3000)) {
             if (existingBoulders.length >= 12) {
                 let counter = 0;
-                existingBoulders.forEach(b => counter++ < spawns.length ? this.breakBoulder(b) : null);
+                existingBoulders.forEach(b => counter++ < spawns.length ? b.break() : null);
             }
             Object.values(this.gameObjects).filter(o => o.type === 'spawn').forEach(sp => {
                 new Boulder(this, sp, this.world, Box2D, this.graphics);
             });
             this.lastSpawnTime = this.totalTime;
         }
-    }
-
-    breakBoulder(boulder) {
-        const spawnPos = boulder.body.GetPosition();
-        this.unregisterObj(boulder);
-        this.callbacks.push(() => {
-            for (let i = 0; i < 3; ++i) {
-                new Rock(this.graphics, this.world, this, spawnPos);
-            }
-        })
     }
 
     tryCleanRocks() {
