@@ -114,16 +114,25 @@ export default class Game {
     }
 
     initializeMap() {
+        // TODO 2.2 используя 2-мерный массив map, создайте статические объекты
+        /*
+        * ' ' - пустая клетка
+        * 'x' - стена
+        * Воспользуйтесь только что сделанным this.makeRectangleBody
+        * Все клетки - квадратные, ширина=высота=wallSize
+        * 's' - Spawn
+        * Воспользуйтесь конструктором new Spawn(this, this.world, this.graphics, x, y)
+        * */
         for (let i = 0; i < map.length; ++i) {
             for (let j = 0; j < map[i].length; ++j) {
                 let mapSign = map[i][j];
                 let x = wallSize * j + wallSize / 2;
                 let y = wallSize * i + wallSize / 2;
                 if (mapSign === 'x') {
-                    const body = this.makeRectangleImpl(x, y, wallSize, wallSize, false);
+                    const body = this.makeRectangleBody(x, y, wallSize, wallSize, false);
                     body.type = 'wall';
                     this.registerObj(body);
-                    body.image = this.graphics.getSquareSprite('spelunky', 0, 32, 16, 64, 80, wallSize, body.GetPosition());
+                    body.image = this.graphics.getImageFromSprite('spelunky', 0, 32, 16, 64, 80, wallSize, body.GetPosition());
                 }
                 else if (mapSign === 's') {
                     new Spawn(this, this.world, this.graphics, x, y);
@@ -167,25 +176,38 @@ export default class Game {
         });
     }
 
-    makeRectangleImpl(x, y, width, height, dynamic) {
+    makeRectangleBody(x, y, width, height, dynamic) {
+        // TODO 2.1 создайте тело с заданными параметрами
+        /*
+        * Тело должно находиться в точке x y, иметь прямоугольную форму
+        * и одну фикстуру, шириной-высотой width-height
+        * Чтобы установить позицию, тела, воспользуйетсь bodyDef.set_position(b2Vec2 position)
+        * Чтобы задать форму, вам потребуется сущность Box2D.b2PolygonShape() и её метод SetAsBox(halfWidth, halfHeight)
+        * Чтобы связать это все вместе, потребутеся вызвать body.CreateFixture(b2Shape shape, double density)
+        * Не забывайте вызывать __destroy__() у использованных временных сущностей (вектор, фигура, bodyDef)
+        * */
+        // TODO 3.1 при помощи bodyDef.set_type установите тип для динамических тел в Box2D.b2_dynamicBody
+        // Добавьте параметр dynamic в сигнатуру этого метода, и выставляйте типа тела в зависимости от него
         if ((!x && x !== 0) || (!y && y !== 0)) {
             console.warn('Bad x/y', x, y);
             return null;
         }
         const bodyDef = new Box2D.b2BodyDef();
         const pos = new Box2D.b2Vec2(x, y);
+        bodyDef.set_position(pos);
+
         if (dynamic)
             bodyDef.set_type(Box2D.b2_dynamicBody);
-        bodyDef.set_position(pos);
+
         const body = this.world.CreateBody(bodyDef);
+        const shape = new Box2D.b2PolygonShape();
+        shape.SetAsBox(width / 2, height / 2);
+        body.CreateFixture(shape, 1);
+
         bodyDef.__destroy__();
         pos.__destroy__();
-        const shape = new Box2D.b2PolygonShape();
-        const halfWidth = width / 2;
-        const halfHeight = height / 2;
-        shape.SetAsBox(halfWidth, halfHeight);
-        body.CreateFixture(shape, 1);
         shape.__destroy__();
+
         return body;
     }
 

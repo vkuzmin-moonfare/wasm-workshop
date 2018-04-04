@@ -8,7 +8,7 @@ class Rock {
 
         let width = Math.max(0.1, Math.random() / 4);
         let height = Math.max(0.1, Math.random() / 4);
-        const body = this.game.makeRectangleImpl(spawnPos.get_x() + (Math.random() - 0.5),
+        const body = this.game.makeRectangleBody(spawnPos.get_x() + (Math.random() - 0.5),
             spawnPos.get_y(), width, height, true);
         this.image = new Paper.Shape.Rectangle({
             point: this.graphics.vec2Point(body.GetPosition()),

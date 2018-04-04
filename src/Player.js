@@ -31,7 +31,7 @@ class Player {
         this.type = 'player';
 
         // graphics and controls
-        this.image = this.graphics.getSquareSprite('spelunky', 0, 16, 15, 64, 80, 0.5, body.GetPosition());
+        this.image = this.graphics.getImageFromSprite('spelunky', 0, 16, 15, 64, 80, 0.5, body.GetPosition());
         this.controls = new Controls(body, Box2D);
         const d = 0.5;
         this.offsetByDir = {
@@ -59,16 +59,20 @@ class Player {
         let shootDirection = this.controls.getShootDirection();
         let offsetByDir = this.offsetByDir[shootDirection];
         if ((this.game.totalTime - this.lastShootTime > 100) && offsetByDir) {
+            // TODO 5.2 создайте объект Pickaxe в координатах playerPos.x + offsetByDir.x, playerPos.y, offsetByDir.y
+            // Координаты получаются функциями get_x / get_y, т.к. позиция тела игрока и offsetByDir - вектора b2Vec2
+            // Примените силу в 50 ньютонов к центру тела объекта по направлению offsetByDir
+            // не забудьте почистить все использованные временные вектора!
             const playerPos = this.body.GetPosition();
             let offsetX = offsetByDir.get_x();
             let x = playerPos.get_x() + offsetX;
             let offsetY = offsetByDir.get_y();
             let y = playerPos.get_y() + offsetY;
             const pickaxeSize = 0.3;
-            const body = this.game.makeRectangleImpl(x, y, pickaxeSize, pickaxeSize, true);
+            const body = this.game.makeRectangleBody(x, y, pickaxeSize, pickaxeSize, true);
             body.type = 'pickaxe';
             body.SetBullet(true);
-            body.image = this.graphics.getSquareSprite('pickaxe', 0, 0, 75, 75, 75, pickaxeSize, body.GetPosition());
+            body.image = this.graphics.getImageFromSprite('pickaxe', 0, 0, 75, 75, 75, pickaxeSize, body.GetPosition());
             body.SetGravityScale(0.5);
             this.game.registerObj(body);
             const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);

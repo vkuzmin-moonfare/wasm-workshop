@@ -9,7 +9,8 @@ class Boulder {
         let shift = new Box2D.b2Vec2(world.width / 2 - spawnPos.get_x(), world.height / 2 - spawnPos.get_y());
         shift.Normalize();
         shift.op_mul(boulderSize);
-        this.body = game.makeRectangleImpl(spawnPos.get_x() + shift.get_x(), spawnPos.get_y() + shift.get_y(), boulderSize, boulderSize, true);
+        // TODO 3.2 воспольуйтесь только что сделанным флагом dynamic
+        this.body = game.makeRectangleBody(spawnPos.get_x() + shift.get_x(), spawnPos.get_y() + shift.get_y(), boulderSize, boulderSize, true);
         this.type = 'boulder';
         this.body.gameObject = this;
         this.game = game;
@@ -19,7 +20,7 @@ class Boulder {
         this.body.ApplyForceToCenter(shift);
         this.graphics = graphics;
         shift.__destroy__();
-        this.image = graphics.getSquareSprite('spelunky', 16, 48, 16, 64, 80, boulderSize, this.body.GetPosition());
+        this.image = graphics.getImageFromSprite('spelunky', 16, 48, 16, 64, 80, boulderSize, this.body.GetPosition());
         this.game.registerObj(this);
     }
 
@@ -48,6 +49,7 @@ class Boulder {
         let world = this.world;
         let graphics = this.graphics;
         this.game.callbacks.push(() => {
+            // TODO 5.1 сделайте 3 объекта Rock(graphics, world, game, spawnPos, Box2D, accelerateRocks)
             for (let i = 0; i < 3; ++i) {
                 new Rock(graphics, world, game, spawnPos, Box2D, accelerateRocks);
             }

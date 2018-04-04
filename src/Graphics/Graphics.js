@@ -65,19 +65,41 @@ class Graphics {
         Paper.view.draw();
     }
 
-    getSquareSprite(name, xOffset, yOffset, xSize, totalX, totalY, physicalSize, physicalPos) {
-        const raster = new Paper.Raster(name);
+    getImageFromSprite(name, xOffset, yOffset, xSize, totalX, totalY, physicalSize, physicalPos) {
         const position = this.vec2Point(physicalPos);
-        const fitToSize = physicalSize * this.scale;
-        raster.position = new Paper.Point(position.x + (totalX / 2 - xOffset - xSize / 2), position.y + (totalY / 2 - yOffset - xSize / 2));
+        const raster = new Paper.Raster(name);
+        const scaleTo = physicalSize * this.scale / xSize;
+        raster.position = Graphics.getRasterAbsolutePosition(totalX, xOffset, xSize, totalY, yOffset, position);
         const path = new Paper.Shape.Rectangle({
             position: position,
             size: new Paper.Size(xSize, xSize),
+            strokeColor: 'red',
         });
+        //return path; // TODO 4.2 просто удалите этот return
+
         const group = new Paper.Group([path, raster]);
-        group.scale(fitToSize / xSize);
+        group.scale(scaleTo);
         group.clipped = true;
         return group;
+    }
+
+    static getRasterAbsolutePosition(totalX, xOffset, xSize, totalY, yOffset, position) {
+        //return new Paper.Point(-100, -100);
+        // TODO 4.1 Задайте правильную позицию растру вместо того что выше
+        /*
+        * Задача - имея координаты точки в пространстве Paper (position.x, position.y), отступы до нужной картинки
+        * внутри спрайта (xOffset, yOffset), и размеры всего спрайта (totalX, totalY), создать точку
+        * с координатами (position.x + dX), (position.y + dY), где
+        * dX - сдвиг влево относительно центра спрайта до искомой картинки
+        * dY - сдвиг вверх отнсительно центра спрайта до искомой картинки
+        *
+        * Таким образом, искамая точка будет такова, что искомая картинка
+        * находится в сдвинутом "центре" спрайта
+        * */
+        let dX = (totalX / 2 - xOffset - xSize / 2);
+        let dY = (totalY / 2 - yOffset - xSize / 2);
+        // console.log(name, `xOffset=${xOffset}, yOffset=${yOffset}, xSize=${xSize}, totalX=${totalX}, totalY=${totalY}, dX=${dX}, dY=${dY}`);
+        return new Paper.Point(position.x + dX, position.y + dY);
     }
 }
 
