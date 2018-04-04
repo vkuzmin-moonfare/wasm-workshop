@@ -31,7 +31,7 @@ class Player {
         this.type = 'player';
 
         // graphics and controls
-        this.image = this.graphics.getSquareSprite('spelunky', 0, 16, 16, 64, 80, 0.5, body.GetPosition());
+        this.image = this.graphics.getSquareSprite('spelunky', 0, 16, 15, 64, 80, 0.5, body.GetPosition());
         this.controls = new Controls(body, Box2D);
         const d = 0.5;
         this.offsetByDir = {
