@@ -6,6 +6,7 @@ import Paper from 'paper';
 import perf, {Measures} from './Stats/perf';
 import statsHeap from './Stats/stats-heap';
 import Player from "./Player";
+import Rock from "./Rock";
 import Graphics from './Graphics/Graphics';
 
 let Box2D;
@@ -239,18 +240,7 @@ export default class Game {
         this.unregisterObj(body);
         this.callbacks.push(() => {
             for (let i = 0; i < 3; ++i) {
-                let width = Math.max(0.05, Math.random() / 4);
-                let height = Math.max(0.05, Math.random() / 4);
-                const rock = this.makeRectangleImpl(spawnPos.get_x() + (Math.random() - 0.5),
-                    spawnPos.get_y(), width, height, true);
-                rock.type = 'rock';
-                rock.image = new Paper.Shape.Rectangle({
-                    point: this.vec2Point(rock.GetPosition()),
-                    size: new Paper.Size(width * this.scale, height * this.scale),
-                });
-                rock.image.fillColor = 'brown';
-                rock.image.strokeColor = 'brown';
-                this.registerObj(rock);
+                new Rock(this.graphics, this.world, this, spawnPos);
             }
         })
     }
