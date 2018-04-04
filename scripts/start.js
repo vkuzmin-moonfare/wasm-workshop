@@ -82,8 +82,6 @@ choosePort(HOST, DEFAULT_PORT)
     // TODO 1.3: проанализируйте req.path, и если он оканичвается на wasm, выставьте res.type('application/wasm')
     serverConfig.before = (app) => {
           app.use((req, res, next) => {
-              if (req.path.endsWith('.wasm'))
-                  res.type('application/wasm');
               next();
           });
       };
