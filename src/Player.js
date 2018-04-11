@@ -78,7 +78,7 @@ class Player {
             let offsetY = offsetByDir.get_y();
             let x = playerPos.get_x() + offsetX;
             let y = playerPos.get_y() + offsetY;
-
+            
             this.lastShootTime = this.game.totalTime;
         }
     }
