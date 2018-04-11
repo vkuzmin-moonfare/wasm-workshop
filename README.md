@@ -53,5 +53,7 @@
 
 ##### (4) Делаем игровую логику
 
-1. В методе boulder/tryBreak добавьте создание нескольких объектов rock
-1. TODO: В методе player/tryShoot сделайте создание объектов типа pickaxe
+Тут уже возможно понадобится классный справочник по Box2D: http://www.learn-cocos2d.com/api-ref/1.0/Box2D/html/index.html
+
+1. В методе Boulder/tryBreak добавьте создание нескольких объектов rock
+1. В методе Player/tryShoot сделайте создание объектов типа pickaxe
