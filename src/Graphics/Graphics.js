@@ -75,7 +75,6 @@ class Graphics {
             size: new Paper.Size(xSize, xSize),
             strokeColor: 'red',
         });
-        return path; // TODO 3.2 просто удалите этот return
 
         const group = new Paper.Group([path, raster]);
         group.scale(scaleTo);
@@ -84,7 +83,6 @@ class Graphics {
     }
 
     static getRasterAbsolutePosition(totalX, xOffset, xSize, totalY, yOffset, position) {
-        return new Paper.Point(-100, -100);
         // TODO 3.1 Задайте правильную позицию растру вместо того что выше
         /*
         * Задача - имея координаты точки в пространстве Paper (position.x, position.y), отступы до нужной картинки
@@ -96,6 +94,8 @@ class Graphics {
         * Таким образом, искамая точка будет такова, что искомая картинка
         * находится в сдвинутом "центре" спрайта
         * */
+        let dX = (totalX / 2 - xOffset - xSize / 2);
+        let dY = (totalY / 2 - yOffset - xSize / 2);
         // console.log(name, `xOffset=${xOffset}, yOffset=${yOffset}, xSize=${xSize}, totalX=${totalX}, totalY=${totalY}, dX=${dX}, dY=${dY}`);
         return new Paper.Point(position.x + dX, position.y + dY);
     }
