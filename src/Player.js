@@ -1,5 +1,5 @@
 import Controls from './Controls/Controls';
-
+import Pickaxe from './Pickaxe';
 let Box2D;
 class Player {
     constructor(b2D, world, graphics, game) {
@@ -59,22 +59,26 @@ class Player {
         let shootDirection = this.controls.getShootDirection();
         let offsetByDir = this.offsetByDir[shootDirection];
         if ((this.game.totalTime - this.lastShootTime > 100) && offsetByDir) {
-            // TODO 5.2 создайте объект Pickaxe в координатах playerPos.x + offsetByDir.x, playerPos.y, offsetByDir.y
-            // Координаты получаются функциями get_x / get_y, т.к. позиция тела игрока и offsetByDir - вектора b2Vec2
-            // Примените силу в 50 ньютонов к центру тела объекта по направлению offsetByDir
-            // не забудьте почистить все использованные временные вектора!
+            // TODO 4.2 создайте объект Pickaxe в координатах playerPos.x + offsetByDir.x, playerPos.y, offsetByDir.y
+            /**
+             * Для этого вам потребутеся конструктор new Pickaxe(this.game, this.graphics, x, y). Этот конструктор
+             * возвращает Box2D-тело, сохраните его в переменную
+             *
+             * Чтобы объекты куда-то летели, надо применить к ним силу при помощи body.ApplyForceToCenter(force : b2Vec2)
+             * Вам потребуется вектор силы new Box2D.b2Vec2(offsetX, offsetY)
+             * Но это довольно "слабый" вектор, поэтому его надо умнодить на скаляр, например в 50, чтобы получить
+             * силу в 50 ньютонов. Это делается при помощи оператора op_mul, например force.op_mul(scale : number)
+             *
+             * Чтобы было чуть интереснее, стоит добавить телу угловую скорость, например в 8 м/с
+             * Тогда наши кирки будут вращаться вокруг своей оси. Это делается при помощи метода
+             * body.SetAngularVelocity(vel: number)
+             */
             const playerPos = this.body.GetPosition();
             let offsetX = offsetByDir.get_x();
-            let x = playerPos.get_x() + offsetX;
             let offsetY = offsetByDir.get_y();
+            let x = playerPos.get_x() + offsetX;
             let y = playerPos.get_y() + offsetY;
-            const pickaxeSize = 0.3;
-            const body = this.game.makeRectangleBody(x, y, pickaxeSize, pickaxeSize, true);
-            body.type = 'pickaxe';
-            body.SetBullet(true);
-            body.image = this.graphics.getImageFromSprite('pickaxe', 0, 0, 75, 75, 75, pickaxeSize, body.GetPosition());
-            body.SetGravityScale(0.5);
-            this.game.registerObj(body);
+            const body = new Pickaxe(this.game, this.graphics, x, y);
             const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
             impulseVec.op_mul(50);
             body.ApplyForceToCenter(impulseVec);
