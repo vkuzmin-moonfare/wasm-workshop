@@ -78,7 +78,12 @@ class Player {
             let offsetY = offsetByDir.get_y();
             let x = playerPos.get_x() + offsetX;
             let y = playerPos.get_y() + offsetY;
-            
+            const body = new Pickaxe(this.game, this.graphics, x, y);
+            const impulseVec = new Box2D.b2Vec2(offsetX, offsetY);
+            impulseVec.op_mul(50);
+            body.ApplyForceToCenter(impulseVec);
+            body.SetAngularVelocity(8);
+            impulseVec.__destroy__();
             this.lastShootTime = this.game.totalTime;
         }
     }
