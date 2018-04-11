@@ -100,8 +100,8 @@ class Graphics {
         * Таким образом, искамая точка будет такова, что искомая картинка
         * находится в сдвинутом "центре" спрайта
         * */
-        let dX = -9999;
-        let dY = -9999;
+        let dX = (totalX / 2 - xOffset - xSize / 2);
+        let dY = (totalY / 2 - yOffset - xSize / 2);
         // console.log(name, `xOffset=${xOffset}, yOffset=${yOffset}, xSize=${xSize}, totalX=${totalX}, totalY=${totalY}, dX=${dX}, dY=${dY}`);
         return new Paper.Point(position.x + dX, position.y + dY);
     }
