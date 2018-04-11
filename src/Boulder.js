@@ -49,7 +49,7 @@ class Boulder {
         let graphics = this.graphics;
         this.game.callbacks.push(() => {
             // TODO 4.1 сделайте 3 объекта Rock(graphics, world, game, spawnPos, Box2D, accelerateRocks)
-            
+
         })
     }
 
