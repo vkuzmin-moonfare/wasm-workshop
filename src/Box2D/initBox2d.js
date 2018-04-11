@@ -2,7 +2,7 @@ let initializing = null;
 let InitBox2d = null;
 
 // TODO 1.1 - замените на вызов require или import из локальной папки
-const Box2DLoader = require('./Box2D_v2.2.1_debug.wasm');
+const Box2DLoader = window.Box2D;
 
 const initBox2D = async () => {
     if (InitBox2d)
