@@ -4,12 +4,14 @@ import uuid from 'uuid';
 import perf, {Measures} from './Stats/perf';
 import statsHeap from './Stats/stats-heap';
 import Player from './Player';
-import Rock from './Rock';
 import Boulder from './Boulder';
 import Spawn from './Spawn';
+import Wall from './Wall';
 import Graphics from './Graphics/Graphics';
 
 let Box2D;
+
+const fps = 30;
 
 const wallSize = 1;
 const map = [
@@ -102,7 +104,7 @@ export default class Game {
 
         // time
         this.totalTime = 0;
-        let timeStep = 1000 / 30;
+        let timeStep = 1000 / fps;
         this.time = new Time(timeStep);
         statsHeap.timeStep = timeStep;
         this.time.run(this.updatePhysics, this.updateGraphics);
@@ -118,10 +120,7 @@ export default class Game {
         /*
         * ' ' - пустая клетка
         * 'x' - стена
-        * Воспользуйтесь только что сделанным this.makeRectangleBody
-        * Все клетки - квадратные, ширина=высота=wallSize
-        * Также задайте wall.image = this.graphics.getImageFromSprite('spelunky', 0, 32, 16, 64, 80, wallSize, wall.GetPosition());
-        * Это потребуется в дальнейшем
+        * Воспользуйтесь конструктором new Spawn(this, this.world, this.graphics, x, y, wallSize)
         * 's' - Spawn
         * Воспользуйтесь конструктором new Spawn(this, this.world, this.graphics, x, y)
         * */
@@ -131,10 +130,7 @@ export default class Game {
                 let x = wallSize * j + wallSize / 2;
                 let y = wallSize * i + wallSize / 2;
                 if (mapSign === 'x') {
-                    const body = this.makeRectangleBody(x, y, wallSize, wallSize, false);
-                    body.type = 'wall';
-                    this.registerObj(body);
-                    body.image = this.graphics.getImageFromSprite('spelunky', 0, 32, 16, 64, 80, wallSize, body.GetPosition());
+                    new Wall(this, this.world, this.graphics, x, y, wallSize);
                 }
                 else if (mapSign === 's') {
                     new Spawn(this, this.world, this.graphics, x, y);
@@ -197,7 +193,8 @@ export default class Game {
         const bodyDef = new Box2D.b2BodyDef();
         const pos = new Box2D.b2Vec2(x, y);
         bodyDef.set_position(pos);
-        bodyDef.set_type(Box2D.b2_dynamicBody);
+        if(dynamic)
+            bodyDef.set_type(Box2D.b2_dynamicBody);
         const body = this.world.CreateBody(bodyDef);
         const shape = new Box2D.b2PolygonShape();
         shape.SetAsBox(width / 2, height / 2);
