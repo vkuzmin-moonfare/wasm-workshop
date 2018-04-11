@@ -124,7 +124,6 @@ export default class Game {
         * 's' - Spawn
         * Воспользуйтесь конструктором new Spawn(this, this.world, this.graphics, x, y)
         * */
-        
     }
 
     registerObj(obj) {
@@ -167,9 +166,11 @@ export default class Game {
         /*
         * Тело должно находиться в точке x y, иметь прямоугольную форму
         * и одну фикстуру, шириной-высотой width-height
-        * Чтобы установить позицию, тела, воспользуйетсь bodyDef.set_position(b2Vec2 position)
+        * координаты тела уже выставлены правильно
+        *
         * Чтобы задать форму, вам потребуется сущность Box2D.b2PolygonShape() и её метод SetAsBox(halfWidth, halfHeight)
         * Чтобы связать это все вместе, потребутеся вызвать body.CreateFixture(b2Shape shape, double density)
+        *
         * Вам также потребуется в зависимости от флага dynamic выставлять тип тела. Это делается при помощи
         * задания поля type у bodyDefinition - используйте set_type(Box2D.b2_dynamicBody)
         * */
@@ -179,7 +180,10 @@ export default class Game {
             return null;
         }
         const bodyDef = new Box2D.b2BodyDef();
+        const pos = new Box2D.b2Vec2(x, y);
+        bodyDef.set_position(pos);
         const body = this.world.CreateBody(bodyDef);
+
         return body;
     }
 
