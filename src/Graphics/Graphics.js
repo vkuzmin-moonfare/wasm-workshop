@@ -85,7 +85,10 @@ class Graphics {
         * Кроме того, необходимо будет отмасштабировать изображение для соответствия размеру окна. Это делается
         * при помощи метода group.scale(scaleTo). scaleTo уже посчитан заранее правильным образом
         * */
-        return path;
+        const group = new Paper.Group([path, raster]);
+        group.scale(scaleTo);
+        group.clipped = true;
+        return group;
     }
 
     static getRasterAbsolutePosition(totalX, xOffset, xSize, totalY, yOffset, position) {
