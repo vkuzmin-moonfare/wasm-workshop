@@ -179,19 +179,7 @@ export default class Game {
             return null;
         }
         const bodyDef = new Box2D.b2BodyDef();
-        const pos = new Box2D.b2Vec2(x, y);
-        bodyDef.set_position(pos);
-        if(dynamic)
-            bodyDef.set_type(Box2D.b2_dynamicBody);
         const body = this.world.CreateBody(bodyDef);
-        const shape = new Box2D.b2PolygonShape();
-        shape.SetAsBox(width / 2, height / 2);
-        body.CreateFixture(shape, 1);
-
-        bodyDef.__destroy__();
-        pos.__destroy__();
-        shape.__destroy__();
-
         return body;
     }
 
