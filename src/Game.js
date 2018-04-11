@@ -124,19 +124,6 @@ export default class Game {
         * 's' - Spawn
         * Воспользуйтесь конструктором new Spawn(this, this.world, this.graphics, x, y)
         * */
-        for (let i = 0; i < map.length; ++i) {
-            for (let j = 0; j < map[i].length; ++j) {
-                let mapSign = map[i][j];
-                let x = wallSize * j + wallSize / 2;
-                let y = wallSize * i + wallSize / 2;
-                if (mapSign === 'x') {
-                    new Wall(this, this.world, this.graphics, x, y, wallSize);
-                }
-                else if (mapSign === 's') {
-                    new Spawn(this, this.world, this.graphics, x, y);
-                }
-            }
-        }
     }
 
     registerObj(obj) {
