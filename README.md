@@ -23,22 +23,17 @@
 1. Исправьте start.js/serverConfig, добавив в before правильный mime-тип у файлов *.wasm
 1. Добавьте в App/componentDidMount this.start()
 
-##### (2) Создаем статические объекты
+##### (2) Создаем объекты Box2D
 
 1. Реализуйте Game/makeRectangleBody
 1. Реализуйте Game/initializeMap
 
-##### (3) Создаем динамические объекты
-
-1. Добавьте bodyDefinition.set_type(Box2D.b2_dynamicBody) в makeRectangleImpl
-1. Исправьте Boulder/constructor, воспользовавшись новым флагом
-
-##### (4) Рисуем спрайты на paper.js
+##### (3) Рисуем спрайты на paper.js
 
 1. Расчитайте правильные координаты в методе Graphics/getRasterAbsolutePosition
 1. Замените логику отрисовки в Graphics/getImageFromSprite с простых квадратиков на спрайт + вырезающий из него контур
 
-##### (5) Делаем игровую логику
+##### (4) Делаем игровую логику
 
 1. В методе boulder/tryBreak добавьте создание нескольких объектов rock
 1. TODO: В методе player/tryShoot сделайте создание объектов типа pickaxe

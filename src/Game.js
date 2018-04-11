@@ -170,9 +170,9 @@ export default class Game {
         * Чтобы установить позицию, тела, воспользуйетсь bodyDef.set_position(b2Vec2 position)
         * Чтобы задать форму, вам потребуется сущность Box2D.b2PolygonShape() и её метод SetAsBox(halfWidth, halfHeight)
         * Чтобы связать это все вместе, потребутеся вызвать body.CreateFixture(b2Shape shape, double density)
-        * Не забывайте вызывать __destroy__() у использованных временных сущностей (вектор, фигура, bodyDef)
+        * Вам также потребуется в зависимости от флага dynamic выставлять тип тела. Это делается при помощи
+        * задания поля type у bodyDefinition - используйте set_type(Box2D.b2_dynamicBody)
         * */
-        // TODO 3.1 при помощи bodyDef.set_type установите тип для динамических тел в Box2D.b2_dynamicBody
         // Добавьте параметр dynamic в сигнатуру этого метода, и выставляйте типа тела в зависимости от него
         if ((!x && x !== 0) || (!y && y !== 0)) {
             console.warn('Bad x/y', x, y);

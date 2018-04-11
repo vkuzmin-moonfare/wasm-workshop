@@ -75,7 +75,7 @@ class Graphics {
             size: new Paper.Size(xSize, xSize),
             strokeColor: 'red',
         });
-        return path; // TODO 4.2 просто удалите этот return
+        return path; // TODO 3.2 просто удалите этот return
 
         const group = new Paper.Group([path, raster]);
         group.scale(scaleTo);
@@ -85,7 +85,7 @@ class Graphics {
 
     static getRasterAbsolutePosition(totalX, xOffset, xSize, totalY, yOffset, position) {
         return new Paper.Point(-100, -100);
-        // TODO 4.1 Задайте правильную позицию растру вместо того что выше
+        // TODO 3.1 Задайте правильную позицию растру вместо того что выше
         /*
         * Задача - имея координаты точки в пространстве Paper (position.x, position.y), отступы до нужной картинки
         * внутри спрайта (xOffset, yOffset), и размеры всего спрайта (totalX, totalY), создать точку

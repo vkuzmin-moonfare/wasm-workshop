@@ -9,8 +9,7 @@ class Boulder {
         let shift = new Box2D.b2Vec2(world.width / 2 - spawnPos.get_x(), world.height / 2 - spawnPos.get_y());
         shift.Normalize();
         shift.op_mul(boulderSize);
-        // TODO 3.2 воспольуйтесь только что сделанным флагом dynamic
-        this.body = game.makeRectangleBody(spawnPos.get_x() + shift.get_x(), spawnPos.get_y() + shift.get_y(), boulderSize, boulderSize);
+        this.body = game.makeRectangleBody(spawnPos.get_x() + shift.get_x(), spawnPos.get_y() + shift.get_y(), boulderSize, boulderSize, true);
         this.type = 'boulder';
         this.body.gameObject = this;
         this.game = game;
