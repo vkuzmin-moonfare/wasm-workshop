@@ -1,7 +1,7 @@
 let initializing = null;
 let InitBox2d = null;
 
-// TODO 1.1 - замените на вызов require или import из локальной папки
+// TODO 1.2 - замените на вызов require или import из локальной папки
 const Box2DLoader = window.Box2D;
 
 const initBox2D = async () => {
@@ -12,7 +12,7 @@ const initBox2D = async () => {
     initializing = Box2DLoader()
         .then((result) => {
             InitBox2d = result;
-            result.then = null; // TODO 1.2 - попробуйте закомментировать и посмотреть что получится
+            result.then = null;
             return result;
         });
     return initializing;
