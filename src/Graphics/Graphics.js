@@ -76,14 +76,14 @@ class Graphics {
             strokeColor: 'red',
         });
 
-        // TODO 3.2 - вырежьте из спрайта прямоугольник
+        // TODO 3.2 - cut a rectangle out of the sprite
         /*
-        * Для этого вам потребуется создать группу объектов Paper.Group([path1, path2, и т.п.]) и вернуть её
-        * вместо нашего прямоугольника
-        * Если у группы выставить свойство group.clipped = true, то первый её элемент будет считаться маской
-        * Таким образом, нам нужно взять и создать группу из [path, raster], чтобы прямоугольник наложился на растр
-        * Кроме того, необходимо будет отмасштабировать изображение для соответствия размеру окна. Это делается
-        * при помощи метода group.scale(scaleTo). scaleTo уже посчитан заранее правильным образом
+        * You will need a group of paper objects via Paper.Group([path1, path2, и т.п.]) and return it here
+        * instead of this rectangle
+        * If a group has a property group.clipped = true, then its first element will be considered a mask
+        * Therefore, you'll need to create such a group [path, raster], so that the rectangle is over the raster in the correct place
+        * Apart from that, you will need to scale the image according to the window dimensions. This is done via
+        * method group.scale(scaleTo). scaleTo is already calculated for you correctly
         * */
         const group = new Paper.Group([path, raster]);
         group.scale(scaleTo);
@@ -92,16 +92,16 @@ class Graphics {
     }
 
     static getRasterAbsolutePosition(totalX, xOffset, xSize, totalY, yOffset, position) {
-        // TODO 3.1 Задайте правильную позицию растру
+        // TODO 3.1 Set the correct raster position
         /*
-        * Задача - имея координаты точки в пространстве Paper (position.x, position.y), отступы до нужной картинки
-        * внутри спрайта (xOffset, yOffset), и размеры всего спрайта (totalX, totalY), создать точку
-        * с координатами (position.x + dX), (position.y + dY), где
-        * dX - сдвиг влево относительно центра спрайта до искомой картинки
-        * dY - сдвиг вверх отнсительно центра спрайта до искомой картинки
+        * Your goal is, knowing:
+        * 1. coordinates in the Paper space (position.x, position.y),
+        * 2. correct offset inside the sprite (xOffset, yOffset),
+        * 3. and the total sprite size (totalX, totalY),
+        * create a point with coordinates (position.x + dX), (position.y + dY), where
+        * dX - shift to the left to aim at the target picture
+        * dY - shift to the top to aim at the target picture
         *
-        * Таким образом, искамая точка будет такова, что искомая картинка
-        * находится в сдвинутом "центре" спрайта
         * */
         let dX = (totalX / 2 - xOffset - xSize / 2);
         let dY = (totalY / 2 - yOffset - xSize / 2);

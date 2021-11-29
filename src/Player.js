@@ -59,18 +59,18 @@ class Player {
         let shootDirection = this.controls.getShootDirection();
         let offsetByDir = this.offsetByDir[shootDirection];
         if ((this.game.totalTime - this.lastShootTime > 100) && offsetByDir) {
-            // TODO 4.2 создайте объект Pickaxe в координатах playerPos.x + offsetByDir.x, playerPos.y, offsetByDir.y
+            // TODO 4.2 create an object Pickaxe at playerPos.x + offsetByDir.x, playerPos.y, offsetByDir.y
             /**
-             * Для этого вам потребутеся конструктор new Pickaxe(this.game, this.graphics, x, y). Этот конструктор
-             * возвращает Box2D-тело, сохраните его в переменную
+             * You will need the constructor new Pickaxe(this.game, this.graphics, x, y). This constructor
+             * returns a Box2D body, save it to a variable
              *
-             * Чтобы объекты куда-то летели, надо применить к ним силу при помощи body.ApplyForceToCenter(force : b2Vec2)
-             * Вам потребуется вектор силы new Box2D.b2Vec2(offsetX, offsetY)
-             * Но это довольно "слабый" вектор, поэтому его надо умнодить на скаляр, например в 50, чтобы получить
-             * силу в 50 ньютонов. Это делается при помощи оператора op_mul, например force.op_mul(scale : number)
+             * In order for objects to fly somewhere, you will need to apply force to them via body.ApplyForceToCenter(force : b2Vec2)
+             * You will need that new vector: new Box2D.b2Vec2(offsetX, offsetY)
+             * However, this is only 1 newton strong, so a massive body won't fly. You have to make it stronger by multiplying it to a scalar,
+             * e.g. make it 50 newtons. This is done via op_mul, e.g. force.op_mul(scale : number)
              *
-             * Чтобы было чуть интереснее, стоит добавить телу угловую скорость, например в 8 м/с
-             * Тогда наши кирки будут вращаться вокруг своей оси. Это делается при помощи метода
+             * To make it rotate so it's a bit more interesting, you'll need to apply angular velocity to it, e.g. 8 meters/second.
+             * It will make our pickaxes rotate during their flight. It's done via
              * body.SetAngularVelocity(vel: number)
              */
             const playerPos = this.body.GetPosition();
