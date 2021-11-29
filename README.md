@@ -1,59 +1,39 @@
 # wasm-workshop
 
-Мастер-класс для конференции ДАМП 2018 (Екатеринбург)
+Wasm workshop
 
-Автор: Валерий Кузьмин, СКБ Контур
+Author: Valeriy Kuzmin, Moonfare
 
-### Немного о мастер-классе
+### Prerequisites
+1. 
+2. git
+3. node.js 8+
+4. yarn, (npm will do too)
+5. Your favorite js editor
+6. Chrome, Firefox or Edge
 
-На этом мастер-классе вы сможете сами написать простую 2d-игру с использованием C++ библиотеки Box2D и отображением на canvas. Вы научитесь подключать wasm модули на страницу, моделировать физику при помощи Box2D, работать c paper.js для отрисовки простых фигур на canvas и управлять памятью в emscripten. Будет возможность делать задания на своем ноутбуке или просто смотреть на лайв-кодинг и слушать теорию.
+### Tasks
 
-В самом начале я кратко расскажу, что такое стандарт WebAssembly и зачем он вам может быть нужен. Затем мы пробежимся по устройству emscripten-модулей и объектов, засунем их в webpack, попутно поборовшись с разными проблемами. После этого будет часть с практикой, на которой вы потрогаете обернутый в JS код на C++ и немного почувствуете себя разработчиком игр. Кроме заданий непосредственно на мастер-классе, будет также набор из заданий «на дом», чтобы вы могли в спокойной обстановке и в своем темпе поразбираться с кодом. В конце мы снова вернемся к теории, где я расскажу про механизмы управления памятью и простые практические советы для того, чтобы избегать утечек.
+##### (1) Connecting emscripten module
 
-Подготовка (теория, необязательно):
+1. Turn off the dumb loading in index.html
+1. Change window.Box2D initBox2d.js to use require or import
+1. Fix `start.js/serverConfig`, adding correct mime-type for *.wasm
+1. Add `this.start()` to `App/componentDidMount` 
 
-1. Если вы хотите узнать, что такое WebAssembly более подробно, и как его можно использовать для ваших практических задач, рекомендую посмотреть мой доклад с Fronttalks 2017: https://youtu.be/yUVPH9GQtOo
+##### (2) Creating Box2D objects
 
-2. Для желающих более детально понять устройство физического движка Box2D — мануал от его автора (осторожно, внутри код на C++). http://box2d.org/manual.pdf
+1. Implement Game/makeRectangleBody
+1. Implement Game/initializeMap
 
-Подготовка (окружение, обязательно):
+##### (3) Drawing sprites via paper.js
 
-1. git
+1. Calculate the correct coordinates in `Graphics/getRasterAbsolutePosition`
+1. Change the drawing logic in `Graphics/getImageFromSprite` to be a sprite + a cutting contour
 
-2. node.js версии 8 и выше
+##### (4) Implementing the game logic
 
-3. yarn, но можно обойтись и npm-ом
+You may need this manual: http://www.learn-cocos2d.com/api-ref/1.0/Box2D/html/index.html
 
-4. Редактор с хорошей поддержкой JS. Например VSCode, WebStorm, Atom, Sublime.
-
-5. Chrome, Firefox или Edge
-
-Конечно, целиком и полностью написать игру за 1.5 часа будет тяжело. Поэтому я сделал большую часть грязной работы в репозитории, за вас - в заданиях останется лишь делать самое интересное и учиться ключевым моментам.
-
-### Задания
-
-##### (1) Подключаем emscripten-модуль
-
-Результат комплияции C++ кода в emscripten - это не только wasm файл, но еще js-обертка к нему. Подключить его к обычному проекту, например засунув в webpack - не самая тривиальная задача.
-
-1. Выключите подгрузку скрипта в index.html
-1. Замените window.Box2D initBox2d.js на require или import
-1. Исправьте start.js/serverConfig, добавив в before правильный mime-тип у файлов *.wasm
-1. Добавьте в App/componentDidMount this.start()
-
-##### (2) Создаем объекты Box2D
-
-1. Реализуйте Game/makeRectangleBody
-1. Реализуйте Game/initializeMap
-
-##### (3) Рисуем спрайты на paper.js
-
-1. Расчитайте правильные координаты в методе Graphics/getRasterAbsolutePosition
-1. Замените логику отрисовки в Graphics/getImageFromSprite с простых квадратиков на спрайт + вырезающий из него контур
-
-##### (4) Делаем игровую логику
-
-Тут уже возможно понадобится классный справочник по Box2D: http://www.learn-cocos2d.com/api-ref/1.0/Box2D/html/index.html
-
-1. В методе Boulder/tryBreak добавьте создание нескольких объектов rock
-1. В методе Player/tryShoot сделайте создание объектов типа pickaxe
+1. In `Boulder/tryBreak` add creation of several `Rock` objects
+1. In `Player/tryShoot` add creation of `Pickaxe` object

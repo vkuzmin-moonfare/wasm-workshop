@@ -1,7 +1,7 @@
 let initializing = null;
 let InitBox2d = null;
 
-// TODO 1.2 - замените на вызов require или import из локальной папки
+// TODO 1.2 - change to require or import from a local folder
 const Box2DLoader = window.Box2D;
 
 const initBox2D = async () => {

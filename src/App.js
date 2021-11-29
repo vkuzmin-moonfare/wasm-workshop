@@ -40,7 +40,7 @@ export default class App extends React.Component {
     };
 
     componentDidMount() {
-        // TODO 1.4 - добавьте setTimeout(this.start)
+        // TODO 1.4 - add setTimeout(this.start)
     }
 
     render() {

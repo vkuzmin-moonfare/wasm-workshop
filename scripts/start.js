@@ -79,7 +79,7 @@ choosePort(HOST, DEFAULT_PORT)
       proxyConfig,
       urls.lanUrlForConfig
     );
-    // TODO 1.3: проанализируйте req.path, и если он оканичвается на wasm, выставьте res.type('application/wasm')
+    // TODO 1.3: check req.path, and if it ends with wasm, set res.type('application/wasm')
     serverConfig.before = (app) => {
           app.use((req, res, next) => {
               next();
