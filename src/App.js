@@ -40,6 +40,7 @@ export default class App extends React.Component {
     };
 
     componentDidMount() {
+        // TODO 1.4 - add setTimeout(this.start)
         setTimeout(this.start);
     }
 

@@ -116,13 +116,12 @@ export default class Game {
     }
 
     initializeMap() {
-        // TODO 2.1 используя 2-мерный массив map, создайте статические объекты
+        // TODO 2.1 using map 2-dimensional array, create the static objects
         /*
-        * ' ' - пустая клетка
-        * 'x' - стена
-        * Воспользуйтесь конструктором new Spawn(this, this.world, this.graphics, x, y, wallSize)
+        * ' ' - empty cell
+        * 'x' - a wall
+        * Use new Spawn(this, this.world, this.graphics, x, y, wallSize)
         * 's' - Spawn
-        * Воспользуйтесь конструктором new Spawn(this, this.world, this.graphics, x, y)
         * */
     }
 
@@ -162,19 +161,19 @@ export default class Game {
     }
 
     makeRectangleBody(x, y, width, height, dynamic) {
-        // TODO 2.2 создайте тело с заданными параметрами
+        // TODO 2.2 make a body with target parameters
         /*
-        * Тело должно находиться в точке x y, иметь прямоугольную форму
-        * и одну фикстуру, шириной-высотой width-height
-        * координаты тела уже выставлены правильно
+        * The body center must be located in x, y and it should have a rectangular shape
+        * it should have only one fixture, of size width x height
+        * The body coordinates are already set correctly
         *
-        * Чтобы задать форму, вам потребуется сущность Box2D.b2PolygonShape() и её метод SetAsBox(halfWidth, halfHeight)
-        * Чтобы связать это все вместе, потребутеся вызвать body.CreateFixture(b2Shape shape, double density)
+        * To set body's shape, you'll need Box2D.b2PolygonShape() and its method SetAsBox(halfWidth, halfHeight)
+        * To connect everything together, you'll need to call body.CreateFixture(b2Shape shape, double density)
         *
-        * Вам также потребуется в зависимости от флага dynamic выставлять тип тела. Это делается при помощи
-        * задания поля type у bodyDefinition - используйте set_type(Box2D.b2_dynamicBody)
+        * You also need to set the dynamic flag correctly. It's done via
+        * setting type on bodyDefinition - use set_type(Box2D.b2_dynamicBody)
         * */
-        // Добавьте параметр dynamic в сигнатуру этого метода, и выставляйте типа тела в зависимости от него
+        // Add a parameter 'dynamic' to this method's signature, and set the type based on it
         if ((!x && x !== 0) || (!y && y !== 0)) {
             console.warn('Bad x/y', x, y);
             return null;
