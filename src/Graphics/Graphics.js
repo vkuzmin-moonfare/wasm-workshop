@@ -78,7 +78,7 @@ class Graphics {
 
         // TODO 3.2 - cut a rectangle out of the sprite
         /*
-        * You will need a group of paper objects via Paper.Group([path1, path2, и т.п.]) and return it here
+        * You will need a group of paper objects via Paper.Group([path1, path2, etc]) and return it here
         * instead of this rectangle
         * If a group has a property group.clipped = true, then its first element will be considered a mask
         * Therefore, you'll need to create such a group [path, raster], so that the rectangle is over the raster in the correct place
