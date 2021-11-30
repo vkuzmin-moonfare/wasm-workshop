@@ -120,8 +120,9 @@ export default class Game {
         /*
         * ' ' - empty cell
         * 'x' - a wall
-        * Use new Spawn(this, this.world, this.graphics, x, y, wallSize)
+        * new Wall(this, this.world, this.graphics, x, y, wallSize);
         * 's' - Spawn
+        * new Spawn(this, this.world, this.graphics, x, y);
         * */
     }
 
