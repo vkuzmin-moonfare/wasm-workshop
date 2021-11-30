@@ -5,12 +5,11 @@ Wasm workshop
 Author: Valeriy Kuzmin, Moonfare
 
 ### Prerequisites
-1. 
-2. git
-3. node.js 8+
-4. yarn, (npm will do too)
-5. Your favorite js editor
-6. Chrome, Firefox or Edge
+1. git
+2. node.js v8.x
+3. yarn, (npm will do too)
+4. Your favorite js editor
+5. Chrome, Firefox or Edge
 
 ### Tasks
 
