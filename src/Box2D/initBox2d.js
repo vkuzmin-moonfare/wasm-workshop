@@ -1,7 +1,7 @@
 let initializing = null;
 let InitBox2d = null;
 
-// TODO 1.2 - change to require or import from a local folder
+// TODO 1.2 - change to require or import from a local folder, ./Box2D_v2.2.1_debug.wasm.js
 const Box2DLoader = window.Box2D;
 
 const initBox2D = async () => {
